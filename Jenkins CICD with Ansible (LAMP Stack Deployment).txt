@@ -1,0 +1,348 @@
+       *****To Setup  Jenkins CI & CD with docker Server on RHEL-9.8 (Latest Version)****
+       
+********login to docker server and perform the below command***********
+Step 1: ping google and redhat on VM
+        #ping www.google.com
+        #ping www.redhat.com
+
+Step 2: Take Snapshot
+        Name:-Before_install_docker_server
+
+Step 3:- Set Hostname
+         #hostnamectl set-hostname dockersrv.example.com
+
+Step 4:- Mount CD/DVD to /mnt   
+         #mount /dev/cdrom /mnt
+         #yum clean all
+         #yum repolist all
+
+Note:-to enabled file based repo
+
+Step 5:- install docker on rhel-9.8
+use below link
+https://www.linuxtechi.com/how-to-install-docker-on-rhel
+
+Step:-6 add port 8080 on firewall
+        #firewall-cmd --permanent --add-port=8080/tcp
+	#firewall-cmd --reload
+	#firewall-cmd --list-all
+	
+Step:-7 pull one tomcat image
+go to hub.docker.com and type tomcat
+        #docker pull tomcat:latest
+		Edit /etc/resolv.conf and add:
+nameserver 8.8.8.8
+nameserver 1.1.1.1
+		#docker images
+		#docker run -d --name tomcat-container -p 8081:8080 tomcat
+		#docker ps -a
+		#docker ps
+		#ifconfig
+		
+Now copy server ip and paste to browser
+http://serverip:8081
+
+HTTP Status 404-Not Found
+so don't warry
+
+go to inside the container
+         #docker exec -it tomcat-container /bin/bash
+	 #pwd
+	 #ls
+	 #ls webapps
+	 #ls webapps.dist/
+	 #cp -R webapps.dist/* webapps/
+	 #ls webapps
+now refresh the page
+so working fine
+this is testing purpose
+Now exit the container then stop the container and then delete
+    #docker stop tomcat-container
+	#docker rm tomcat-container
+	
+Step 7:- Now Create a Docker file
+    #vim Dockerfile
+FROM tomcat:latest
+RUN  cp -R /usr/local/tomcat/webapps.dist/*   /usr/local/tomcat/webapps
+
+:wq!
+
+    #docker build -t demotomcat .
+	#docker images
+	#docker run -d --name demotomcat-container -p 8085:8080 demotomcat
+Now copy server ip and paste to browser
+http://serverip:8085
+
+Page is accessible
+working fine
+    #docker images
+    #docker ps -a
+	
+Lets integrate with jenkins
+first all create 1 user in docker server
+    #useradd dockeradmin
+	#passwd dockeradmin
+	#usermod -aG docker dockeradmin {whenever install docker pkg automatic add docker group}
+	#vim /etc/sudoers    {root priviledge of this user}
+	#vim /etc/ssh/sshd_config
+	
+PasswordAuthentication yes	{uncomment the line}
+
+:wq!
+
+#systemctl restart sshd.service   ----->{Restart the sshd service}
+   
+Now go to jenkins dashboard
+go to manage jenkins
+go to system and find out 
+Publish over ssh
+add ssh server and create docker server credentials
+Name:- docker-host
+Hostname:- docker server ip
+Username:- dockeradmin
+Advanced ,use password authentication click that
+password:-123
+and click test configuration
+and apply and save
+Successfully connect docker with jenkins
+
+Now to create 1 jenkins job
+
+New item
+Name:- Build_and_deploy_container
+Copy form previous job and ok
+git:- to paste github account FormFillApp repo url
+Build Triggers
+Poll SCM :-* * * * *
+			branch:-main
+			Goals and options:-clean install
+			Deploy war/ear to a container is {tab is closed}
+			post build action
+			send build artifacts over SSH
+			Source files:- target/*.war
+			remove prefix:- target
+			remote directory:-
+			
+Now to go docker server
+             #su - dockeradmin
+	     $pwd
+	      $ls
+	      
+Now to go jenkins dashboard and resume your working
+
+           remote directory:- /home/dockeradmin
+		   apply and save 
+		   then build a job
+		   
+Now go back to docker server
+            $ls
+	    $exit
+	    #cd /opt
+	    #mkdir docker
+	    #cd docker
+	    #pwd
+	/opt/docker
+	    #cd ..
+	    #chown -R dockeradmin:dockeradmin docker
+	   #cd docker
+	   #ls -l
+	   
+Now modified to jenkins job
+go to configure
+          Remote dicrectory:- //opt//docker    {so please use //  because this is jenkins nature}
+		  apply and save and then build
+		  now go to docker server
+		  #ls
+		  #docker ps -a
+		remove the existing container
+		  #docker images
+		 remove the existing image 
+		 #docker rmi demotomcat
+		 #vim Dockerfile
+FROM tomcat:latest
+MAINTAINER Dinesh
+RUN  cp -R /usr/local/tomcat/webapps.dist/*   /usr/local/tomcat/webapps
+COPY   ./*.war /usr/local/tomcat/webapps
+
+:wq!
+       
+           #docker build -t tomcat:v1 .
+	   #docker images
+	   #docker run -d --name tomcatv1 -p 8086:8080 tomcat:v1
+	   #docker ps -a
+	   
+open a browser and paste below url
+http://serverip:8086/FormFillApp
+
+===================================This is Complete Jenkins CI & CD with docker server================================================	   
+	   
+	   *****To Setup  Jenkins CI & CD with Ansible on RHEL-9.8 Created By Shital Karad*****
+	   
+This is work on jenkins server no need to create separate ansible
+
+Step1:- go to jenkins dashboard inside plugins
+select ansible and install it
+
+Stpe 2:- go to jenkins server and install ansible pkg
+                        #yum install ansible-core -y
+			#cd /etc/ansible
+			#cat ansible.cfg		
+[defaults]
+inventory = /etc/ansible/inventory
+roles_path = /etc/ansible/roles
+collections_path = /etc/ansible/mycollections
+host_key_checking = False
+
+
+            #cat inventory
+			[web]
+                        ansible_node1 ip
+			ansible_node2 ip
+			
+			#ansible-galaxy collection install ansible.posix
+			#ssh-copy-id -i id_rsa.pub root@remote serverip
+			#ansible web -m ping
+			#cat lamp_stack.yml
+
+---
+- name: Deploy LAMP Stack on Red Hat Enterprise Linux 9.8
+  hosts: web
+  become: yes
+
+  tasks:
+    # Install Apache
+    - name: Install Apache
+      ansible.builtin.yum:
+        name: httpd
+        state: present
+
+    - name: Start and enable Apache
+      ansible.builtin.service:
+        name: httpd
+        state: started
+        enabled: yes
+
+    # Install MariaDB
+    - name: Install MariaDB server
+      ansible.builtin.yum:
+        name: mariadb-server
+        state: present
+
+    - name: Start and enable MariaDB
+      ansible.builtin.service:
+        name: mariadb
+        state: started
+        enabled: yes
+
+    # Install PHP
+    - name: Install PHP and required modules
+      ansible.builtin.yum:
+        name:
+          - php
+          - php-mysqlnd
+          - php-cli
+          - php-common
+          - php-gd
+          - php-xml
+          - php-mbstring
+        state: present
+
+    - name: Restart Apache to load PHP
+      ansible.builtin.service:
+        name: httpd
+        state: restarted
+
+    # Firewall configuration without ansible.posix
+    - name: Allow HTTP
+      command: firewall-cmd --permanent --add-service=http
+
+
+    - name: Allow HTTPS
+      command: firewall-cmd --permanent --add-service=https
+
+    - name: Reload firewall
+      command: firewall-cmd --reload
+
+    # Test PHP page
+    - name: Deploy a test PHP file
+      ansible.builtin.copy:
+        dest: /var/www/html/info.php
+        content: |
+          <?php
+          phpinfo();
+          ?>
+        mode: '0644'
+	   
+Step3:- #which ansible
+/usr/bin/ansible
+Now go to jenkins dashboard and go to tools section
+Ansible installations
+Name:-Ansible
+Path to ansible executables directory:-/usr/bin
+
+Now to generate pipeline script
+
+Now to create 1 new job
+Name:- Jenkins_Ansible
+select pipeline job
+pipeline{
+    agent any
+    stages{
+        stage("Execute playbook"){
+             steps{
+                 
+             }
+             
+        }
+    }
+}
+
+now to pipeline syntax
+sample stage :-invoke an ansible playbook
+Ansible tool:-Ansible
+Playbook file path in workspace:-/etc/ansible/lamp_stack.yml
+Inventory file path in workspace:-/etc/ansible/inventory
+Add Credentials:- username:- root 
+                  password:- redhat
+		then add
+		then generate pipeline script
+		copy the script
+		and paste the pipeline section
+		pipeline{
+    agent any
+    stages{
+        stage("Execute playbook"){
+             steps{
+                 ansiblePlaybook credentialsId: '30a49b7d-0eb2-4feb-b948-a9eb3261821d', installation: 'Ansible', inventory: '/etc/ansible/inventory', playbook: '/etc/ansible/lamp_stack.yml', vaultTmpPath: ''
+             }
+             
+        }
+    }
+}
+
+
+and apply save and then build the job
+			
+
+		 
+		  
+           
+			
+			
+
+
+
+
+ 
+
+	
+   
+    
+	
+
+
+	 
+	 
+
+
+ 

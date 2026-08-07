@@ -1,0 +1,21 @@
+$sudo nano install_httpd_pkg.yml
+
+---
+-   name:  This is playbook for insatlling httpd package
+    hosts:  all
+    become: yes
+    vars:   
+        -   pkg:    httpd
+        
+    tasks:  
+        -   name:   to install httpd package
+            yum:    
+                name:   "{{ pkg }}"
+                state:  present
+        -   name:   to start the httpd service
+            service:   
+                name:   "{{ pkg }}"
+                state:  restarted
+                enabled:    yes
+                
+...                

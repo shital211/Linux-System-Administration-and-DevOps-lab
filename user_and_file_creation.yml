@@ -1,0 +1,21 @@
+$sudo nano multi_task.yml
+
+---
+-   name:   This is play for adding user with name akshay and create file demo.pdf
+    hosts:  all
+    become: yes
+    tasks:
+        -   name:   adding user with name akshay
+            user:   
+                name:   akshay
+                state:  present
+                
+        -   name:   create new file with name demo.pdf
+            file:
+                path:   /tmp/demo.pdf
+                owner:  akshay
+                group:  akshay
+                mode:   0777
+                state:  touch 
+                
+...                

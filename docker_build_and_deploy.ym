@@ -1,0 +1,31 @@
+---
+- name: Build image and deploy container
+  hosts: web
+  become: yes
+  collections:
+    - community.docker
+
+  tasks:
+    - name: Remove old container
+      community.docker.docker_container:
+        name: tomcatv1
+        state: absent
+
+    - name: Build Docker image
+      community.docker.docker_image:
+        name: tomcat
+        tag: v1
+        source: build
+        build:
+          path: /opt/docker
+          dockerfile: Dockerfile
+
+    - name: Run Docker container
+      community.docker.docker_container:
+        name: tomcatv1
+        image: tomcat:v1
+        state: started
+        recreate: true
+        published_ports:
+          - "8086:8080"
+        restart_policy: always

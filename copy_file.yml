@@ -1,0 +1,13 @@
+$sudo nano copy.yml
+
+---
+-   name:   This is play for coping file from src to dest
+    hosts:  all
+    become: yes
+    tasks:  
+        -   name:   copying file from scr to dest
+            copy:
+                src: /home/ansadmin/abc
+                dest:   /tmp/abc
+                
+...                

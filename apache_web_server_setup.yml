@@ -1,0 +1,22 @@
+$sudo nano apache_web_server.yml
+---
+-   name:   this is for configuring apache_web_server
+    hosts:  all
+    become: yes
+    tasks:  
+        -   name:   to install  httpd pkg
+            yum:    
+                name:   httpd
+                state:  present
+        -   name:   to copy index.html file from src to dest
+            copy:   
+                src:    /home/ansadmin/files/index.html
+                dest:   /var/www/html/index.html
+        -   name:   to restart httpd service
+            service:
+                name:   httpd
+                state:  restarted
+                enabled:    yes
+                
+                
+...

@@ -1,0 +1,21 @@
+---
+-   name:   this is for configuring httpd server
+    hosts:  all
+    become: yes
+    tasks:  
+        -   name:   to install httpd package    
+            yum:    
+                name:   httpd
+                state:  present
+        -   name:   to copy index.html file from src to dest
+            copy:   
+                src:    /etc/ansible/files/index.html
+                dst:    /var/www/html/index.html
+                
+        -   name:   to restart httpd service
+            service:    
+                name:   httpd   
+                state:  restarted
+                enabled:    yes
+                
+...                

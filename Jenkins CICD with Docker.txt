@@ -1,0 +1,179 @@
+       *****To Setup  Jenkins CI & CD with docker Server on RHEL-9.8 (Latest Versio)****
+       
+********login to docker server and perform the below command***********
+Step 1: ping google and redhat on VM
+        #ping www.google.com
+        #ping www.redhat.com
+
+Step 2: Take Snapshot
+        Name:-Before_install_docker_server
+
+Step 3:- Set Hostname
+         #hostnamectl set-hostname dockersrv.example.com
+
+Step 4:- Mount CD/DVD to /mnt   
+         #mount /dev/cdrom /mnt
+         #yum clean all
+         #yum repolist all
+
+Note:-to enabled file based repo
+
+Step 5:- install docker on rhel-9.8
+use below link
+https://www.linuxtechi.com/how-to-install-docker-on-rhel
+
+Step:-6 add port 8080 on firewall
+        #firewall-cmd --permanent --add-port=8080/tcp
+	#firewall-cmd --reload
+	#firewall-cmd --list-all
+	
+Step:-7 pull one tomcat image
+go to hub.docker.com and type tomcat
+        #docker pull tomcat:latest
+		Edit /etc/resolv.conf and add:
+nameserver 8.8.8.8
+nameserver 1.1.1.1
+		#docker images
+		#docker run -d --name tomcat-container -p 8081:8080 tomcat
+		#docker ps -a
+		#docker ps
+		#ifconfig
+		
+Now copy server ip and paste to browser
+http://serverip:8081
+
+HTTP Status 404-Not Found
+so don't warry
+
+go to inside the container
+         #docker exec -it tomcat-container /bin/bash
+	 #pwd
+	 #ls
+	 #ls webapps
+	 #ls webapps.dist/
+	 #cp -R webapps.dist/* webapps/
+	 #ls webapps
+now refresh the page
+so working fine
+this is testing purpose
+Now exit the container then stop the container and then delete
+    #docker stop tomcat-container
+	#docker rm tomcat-container
+	
+Step 7:- Now Create a Docker file
+    #vim Dockerfile
+FROM tomcat:latest
+RUN  cp -R /usr/local/tomcat/webapps.dist/*   /usr/local/tomcat/webapps
+
+:wq!
+
+    #docker build -t demotomcat .
+	#docker images
+	#docker run -d --name demotomcat-container -p 8085:8080 demotomcat
+Now copy server ip and paste to browser
+http://serverip:8085
+
+Page is accessible
+working fine
+    #docker images
+    #docker ps -a
+	
+Lets integrate with jenkins
+first all create 1 user in docker server
+    #useradd dockeradmin
+	#passwd dockeradmin
+	#usermod -aG docker dockeradmin {whenever install docker pkg automatic add docker group}
+	#vim /etc/sudoers    {root priviledge of this user}
+	#vim /etc/ssh/sshd_config
+	
+PasswordAuthentication yes	{uncomment the line}
+
+:wq!
+
+#systemctl restart sshd.service   ----->{Restart the sshd service}
+   
+Now go to jenkins dashboard
+go to manage jenkins
+go to system and find out 
+Publish over ssh
+add ssh server and create docker server credentials
+Name:- docker-host
+Hostname:- docker server ip
+Username:- dockeradmin
+Advanced ,use password authentication click that
+password:-123
+and click test configuration
+and apply and save
+Successfully connect docker with jenkins
+
+Now to create 1 jenkins job
+
+New item
+Name:- Build_and_deploy_container
+Copy form previous job and ok
+git:- to paste github account FormFillApp repo url
+Build Triggers
+Poll SCM :-* * * * *
+			branch:-main
+			Goals and options:-clean install
+			Deploy war/ear to a container is {tab is closed}
+			post build action
+			send build artifacts over SSH
+			Source files:- target/*.war
+			remove prefix:- target
+			remote directory:-
+			
+Now to go docker server
+             #su - dockeradmin
+	     $pwd
+	      $ls
+	      
+Now to go jenkins dashboard and resume your working
+
+           remote directory:- /home/dockeradmin
+		   apply and save 
+		   then build a job
+		   
+Now go back to docker server
+            $ls
+	    $exit
+	    #cd /opt
+	    #mkdir docker
+	    #cd docker
+	    #pwd
+	/opt/docker
+	    #cd ..
+	    #chown -R dockeradmin:dockeradmin docker
+	   #cd docker
+	   #ls -l
+	   
+Now modified to jenkins job
+go to configure
+          Remote dicrectory:- //opt//docker    {so please use //  because this is jenkins nature}
+		  apply and save and then build
+		  now go to docker server
+		  #ls
+		  #docker ps -a
+		remove the existing container
+		  #docker images
+		 remove the existing image 
+		 #docker rmi demotomcat
+		 #vim Dockerfile
+FROM tomcat:latest
+MAINTAINER Dinesh
+RUN  cp -R /usr/local/tomcat/webapps.dist/*   /usr/local/tomcat/webapps
+COPY   ./*.war /usr/local/tomcat/webapps
+
+:wq!
+       
+           #docker build -t tomcat:v1 .
+	   #docker images
+	   #docker run -d --name tomcatv1 -p 8086:8080 tomcat:v1
+	   #docker ps -a
+	   
+open a browser and paste below url
+http://serverip:8086/FormFillApp
+
+===================================THANK YOU================================================	   
+	   
+	  

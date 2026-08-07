@@ -1,0 +1,277 @@
+    ****How to Setup Ansible Lab on AWS & Linux With non root sudo user****
+
+Steps:- 
+1)requirement for setting up ansible infra
+
+Linux and EC2 server name:- Ansible_controller
+4GB RAM
+2 Core processor
+
+2) Linux or EC2 (n) number of nodes as worker or hosts & ansible nodes
+	
+3) Launch 3 EC2 instance in mumbai region with SG having ssh,icmp,http open & name {all in Same AZ}
+    Ansible_controller
+	Ansible_node1
+	Ansible_node2
+
+4) Networking and Hostname to be configured accordingely so that they ping
+    other
+	#sudo su -
+   #hostnamectl set-hostname ansiblecontroller.radical.com
+   #hostname
+   #bash
+   #ifconfig ----->172.31.40.41 this is private ip
+go to node 1 & node2 and perform the same steps likes above
+For Node1
+    #sudo su -
+   #hostnamectl set-hostname node1.radical.com
+   #hostname
+   #bash
+   #ifconfig----->172.31.46.241 this is private ip of node1
+For Node2
+   #sudo su -
+   #hostnamectl set-hostname node2.radical.com
+   #hostname
+   #bash
+   #ifconfig----->172.31.46.176 this is private ip of node2
+   
+From controller node ping ip of node1 & node2 should be successfull
+
+5) Install ansible package only on ansiblecontroller rest all agentless
+    #yum search ansibl*
+	#yum info ansible-core.x86_64
+	#yum install -y  ansible-core.x86_64
+	#ansible --version
+	#python3 --version
+	
+6) Below commands are suppose to be executed on all machine controller+nodes
+     #useradd ansadmin
+	 #passwd ansadmin
+Now, Making ansadmin as sudo user on all nodes {sudo means run as admin/root}
+     #nano -l /etc/sudoers
+Now to go 100 line number then add below entry	 
+	 ## Allow root to run any commands anywhere
+root    ALL=(ALL)       ALL
+ansadmin ALL=(ALL)      NOPASSWD: ALL
+now to save this file used {ctrl+x} then press Y then enter.
+
+Now, ssh configuration on all nodes for allowing different ways of authentication
+    #nano -l /etc/ssh/sshd_config
+change this line to below values
+#PermitRootLogin prohibit-password----->line number 40
+PermitRootLogin yes ------------------->above line should look likes after change
+
+#PubkeyAuthentication yes------>line number 46
+PubkeyAuthentication yes  ------------------->above line should look likes after change
+
+#PasswordAuthentication no------>comment this line number 67
+PasswordAuthentication yes ------------------->above line should look likes after change
+
+Now, we need to restart sshd service on all nodes
+  #systemctl restart sshd
+  
+Step 7:- ******All the below steps now to be done only on controller node*****
+
+Login as ansadmin user 
+first Login ec2-user then 
+     #sudo su - 
+     #su - ansadmin
+	 $ssh-keygen -t rsa ------>{generate public & private key as ansadmin}
+	 $ssh-copy-id ansadmin@172.31.46.241   --->{private ip of node1}
+	 $ssh ansadmin@172.31.46.241 ----->{this must work without password or else 
+	                                      troubleshoot}
+										  
+	 $ssh-copy-id ansadmin@172.31.46.176   --->{private ip of node2}
+	 $ssh ansadmin@172.31.46.176 ----->{this must work without password or else 
+	                                      troubleshoot}
+										  
+Step 8:- Create an inventory/hosts file in the default location 
+        $cd /etc/ansible
+        $sudo nano /etc/ansible/hosts
+[node1]
+172.31.46.241
+
+[node2]
+172.31.46.176
+
+#[allwebservers]
+
+
+#[alldbservers]
+
+#[allotherinfraservers]
+
+To save used Ctrl+x
+
+
+Create this files to avoid warnings of python intetpreter
+ $sudo nano /etc/ansible/ansible.cfg
+[defaults]
+interpreter_python = auto_silent
+
+Ansible community modules:- https://docs.ansible.com/projects/ansible/latest/collections/index_module.html#community-general
+
+1  pwd
+    2  ssh-keygen -t rsa
+    3  ssh-copy-id ansadmin@172.31.46.241
+    4  ssh ansadmin@172.31.46.241
+    5  history
+    6  ssh-copy-id ansadmin@172.31.46.176
+    7  ssh ansadmin@172.31.46.176
+    8  ansible --version
+    9  cd /usr/lib/python3.9/site-packages/ansible
+   10  pwd
+   11  ls
+   12  cd module
+   13  cd modules
+   14  ls
+   15  cat setup.py
+   16  cd
+   17  cd /etc/ansible/
+   18  pwd
+   19  ls
+   20  sudo nano /etc/ansible/hosts
+   21  ls
+   22  cat /etc/ansible/hosts
+   23  ansible all -m ping
+   24  sudo nano /etc/ansible/ansible.cfg
+   25  ansible all -m ping
+   26  cat ansible.cfg
+   27  cat /etc/ansible/hosts
+   28  ansible all -m setup
+   29  ansible all -m command -a 'hostname' -b
+   30  ansible all -m shell -a 'df -hT /'
+   31  ansible all -m command -a "useradd ramesh" -b
+   32  ansible all -m command -a "tail -1 /etc/passwd" -b
+   33  ansible all -m command -a "useradd ramesh" -b
+   34  ansible all -m user -a 'name=ramesh state=present' -b
+   35  ansible all -m user -a 'name=alex state=present' -b
+   36  ansible all -m command -a "yum install -y httpd" -b
+   37  ansible all -m yum -a "name=httpd state=present"
+   38* ansible all -m yum -a "name=httpd state=present"
+   39  ansible all -m yum -a "name=httpd state=absent" -b
+   40  ansible all -m file -a "dest=/tmp/abc.txt state=touch" -b
+   41  ansible all -m command -a "ls -al /tmp/abc.txt"
+   42  ansible all -m file -a "dest=/tmp/demo state=directory" -b
+   43  ansible all -m command -a "ls -ald /tmp/demo"
+   44  ansible all -m file -a "dest=/tmp/demo state=absent" -b
+   45  ansible all -m command -a "ls -ald /tmp/demo"
+   46  ansible node1  -m file -a "dest=/tmp/demo state=directory" -b
+   47  ansible all -m command -a "ls -ald /tmp/demo"
+   48  ansible --version
+   49  cd /usr/lib/python3.9/site-packages/ansible
+   50  ls
+   51  cd modules
+   52  ls
+   53  find /usr/lib/python3.9 -name *parted*
+   54  curl ifconfig.me
+   55  cd /etc/ansible/
+   56  ls
+   57  pwd
+   58  curl ifconfig.me
+   59  cd /tmp/
+   60  ls -lrth
+   61  sudo cp -rv ansible-posix-1.4.0.tar.gz community-general-6.1.0.tar.gz /etc/ansible
+   62  pwd
+   63  cd /etc/ansible/
+   64  ls
+   65  ansible --version
+   66  pwd
+   67  ls
+   68  #sudo mkdir mycollections
+   69  ll
+   70  sudo mkdir mycollections
+   71  ll
+   72  pwd
+   73  ll
+   74  sudo ansible-galaxy collection install ansible-posix-1.4.0.tar.gz -p /etc/ansible/mycollections
+   75  sudo nano -l /etc/ansible/ansible.cfg
+   76  sudo ansible-galaxy collection install community-general-6.1.0.tar.gz  -p /etc/ansible/mycollections
+   77  history
+   78  cat ansible.cfg
+   79  cd
+   80  cd -
+   81  cd mycollections/
+   82  ls
+   83  cd ansible_collections/
+   84  ls
+   85  cd community/
+   86  ls
+   87  cd general/
+   88  ls
+   89  cd ../..
+   90  find /etc/ansible -name *parted*
+   91  find /etc/ansible -name *docker*
+   92  cd ../..
+   93  pwd
+   94  ls
+   95  cat ansible.cfg
+   96  ls
+   97  cat ansible.cfg
+   98  pwd
+   99  sudo nano multi_user_group.yml
+  100  ls
+  101  ansible-playbook multi_user_group.yml --syntax-check
+  102  ansible-playbook multi_user_group.yml -C
+  103  ansible-playbook multi_user_group.yml --check
+  104  ansible-playbook multi_user_group.yml
+  105  ansible all -m shell -a 'tail -1 /etc/passwd'
+  106  ansible all -m shell -a 'tail -1 /etc/group'
+  107  sudo nano multi_user_group.yml
+  108  ansible-playbook multi_user_group.yml --syntax-check
+  109  sudo nano multi_user_group.yml
+  110  ansible-playbook multi_user_group.yml --syntax-check
+  111  sudo nano multi_user_group.yml
+  112  ansible-playbook multi_user_group.yml --syntax-check
+  113  ansible-playbook multi_user_group.yml
+  114  ansible all -m shell -a 'tail -1 /etc/group'
+  115  hisrtory
+  116  history
+
+
+
+
+
+
+
+
+
+
+
+										  
+
+
+	 
+	 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   
+   
+   
+   

@@ -1,0 +1,398 @@
+                         *****To Setup  Jenkins  on RHEL-9.8 and integrate to grafana & prometheus *****
+
+Step 1: ping google and redhat on VM
+        #ping www.google.com
+        #ping www.redhat.com
+
+Step 2: Take Snapshot
+        Name:-Before_install_jenkins_server
+
+Step 3:- Set Hostname
+         #hostnamectl set-hostname jenkins.example.com
+
+Step 4:- Mount CD/DVD to /mnt   
+         #mount /dev/cdrom /mnt
+         #yum clean all
+         #yum repolist all
+
+Note:-to enabled file based repo
+
+Step 5:- Install Java (Jenkins requires Java)
+        #yum install java-21-openjdk -y
+         Verify Java:-
+        #java --version
+
+Step 6:- Enable Jenkins Repository
+        #wget -O /etc/yum.repos.d/jenkins.repo https://pkg.jenkins.io/redhat-stable/jenkins.repo
+        #rpm --import https://pkg.jenkins.io/redhat-stable/jenkins.io-2023.key
+
+Step 7: Install Jenkins
+        #yum install jenkins -y
+
+Step 8: Start and Enable Jenkins
+        #systemctl start jenkins
+        #systemctl enable --now jenkins
+        #systemctl status jenkins
+		#jenkins --version
+
+Step 9: Adjust the Firewall
+        #firewall-cmd --permanent --add-port=8080/tcp
+        #firewall-cmd --reload
+        #firewall-cmd --list-all
+
+Step 10: Access Jenkins Web UI
+        http://<your_server_ip>:8080
+
+Step 11: Get Initial Admin Password 
+                     
+        #cat /var/lib/jenkins/secrets/initialAdminPassword
+               
+        Use this password to unlock Jenkins web interface.
+
+Step 12: Complete Jenkins Setup on Web UI
+
+            Install suggested plugins
+
+            Create admin user
+
+            Start using Jenkins
+			
+  plugins install:-GitHub Integration,maven integration,Deploy to container,Publish Over SSH
+			
+			
+Step 13:-Install maven on jenkins server
+go to browser and type apache maven download
+and select tar.gz file {https://dlcdn.apache.org/maven/maven-3/3.9.16/binaries/apache-maven-3.9.16-bin.tar.gz}
+                  #cd /opt
+		 #wget https://dlcdn.apache.org/maven/maven-3/3.9.16/binaries/apache-maven-3.9.16-bin.tar.gz
+		 #ls
+		 #tar -xvzf apache-maven-3.9.16-bin.tar.gz
+		 #ls
+		 #mv apache-maven-3.9.16 maven
+		 #ls
+		 
+Step 14:-Now to find java path
+        #find  /usr/lib/jvm/java-21* | head -n 3
+		/usr/lib/jvm/java-21-openjdk-21.0.8.0.9-1.el9.x86_64
+		
+Step 15:- Now to open .bashrc and .bash_profile file 
+ #vim .bash_profile
+JAVA_HOME=/usr/lib/jvm/java-21-openjdk-21.0.8.0.9-1.el9.x86_64
+M2_HOME=/opt/maven
+M2=/opt/maven/bin
+PATH=$PATH:$HOME/bin:$JAVA_HOME:$M2:$M2_HOME
+export PATH
+
+:wq!
+
+ #vim .bashrc
+JAVA_HOME=/usr/lib/jvm/java-21-openjdk-21.0.8.0.9-1.el9.x86_64
+M2_HOME=/opt/maven
+M2=/opt/maven/bin
+PATH=$PATH:$HOME/bin:$JAVA_HOME:$M2:$M2_HOME
+export PATH
+
+:wq!	
+           #source .bashrc
+	  #source .bash_profile
+	  #echo $JAVA_HOME
+	  #echo $M2_HOME
+	  #echo $M2
+	  #java -version
+	  #mvn -version
+
+Step 16:- {to create maven directory structure}
+      #mvn archetype:generate | grep maven-archetype-webapp  {choose sample maven webapp project which no is 2267}
+      #mvn archetype:generate
+Choose a number: 8: 8
+Define value for property 'groupId': in.radical.webapp
+Define value for property 'artifactId': FormFillApp
+      #tree FormFillApp/
+      #cd FormFillApp
+      #vim src/main/webapp/index.jsp
+   <form action="action_page.php">
+   <div class="container">
+    <h1>Radical Student Registration!</h1>
+    <p>Please fill in this form!</p>
+    <hr>
+
+    <label for="email"><b>Email</b></label>
+    <input type="text" placeholder="Enter Email" name="email" id="email" required>
+
+    <label for="psw"><b>Password</b></label>
+    <input type="password" placeholder="Enter Password" name="psw" id="psw" required>
+
+    <label for="psw-repeat"><b>Repeat Password</b></label>
+    <input type="password" placeholder="Repeat Password" name="psw-repeat" id="psw-repeat" required>
+    <hr>
+
+    <p>By creating an account you agree to our <a href="#">Terms & Privacy</a>.</p>
+    <button type="submit" class="registerbtn">Register</button>
+  </div>
+
+  <div class="container signin">
+    <p>Already have an account? <a href="#">Sign in</a>.</p>
+  </div>
+</form>
+
+:wq!
+
+	  
+Step 17:- Now to install git on jenkins server
+      #yum install git -y
+	  #git init
+	  #git config --global user.name "Sai"
+	  #git config --global user.email "sai3cs@gmail.com"
+	  #git config --list
+	  #git add .
+	  #git status
+	  #git commit  -m "myfirstcode"
+	  
+Now we create central repo with same name on github account
+      #git remote add origin https:"your github url"
+	  #git branch -M main
+	  #git push -u origin main
+         
+Step 18:- Now go back to jenkins dashboard
+go to manage jenkins :-inside tools
+Add JDK
+Add git
+Add maven
+apply and save
+
+Step 19:- to create 1 jenkins job
+job name:-My_First_Maven_Project
+            git:- to paste github account FormFillApp repo url
+			branch:-main
+			Goals and options:-clean install
+			apply and save and build a job
+			
+			
+        
+Now Install Node Exporter on Jenkins Server
+
+Step 1:- Download Node Exporter
+      #cd /opt
+	  #wget https://github.com/prometheus/node_exporter/releases/download/v1.11.1/node_exporter-1.11.1.linux-amd64.tar.gz
+	  #ls
+     #tar -xvzf node_exporter-1.11.1.linux-amd64.tar.gz
+     #ls
+     #rm -rf node_exporter-1.11.1.linux-amd64.tar.gz
+	 #mv node_exporter-1.11.1.linux-amd64/ node_exporter
+	 #ls
+	
+Step 2:- Create Node Exporter User
+      #useradd --no-create-home --shell /bin/false node_exporter
+	  
+Step 3:- Change Ownership
+      #chown -R node_exporter:node_exporter /opt/node_exporter
+	  
+Step 4:- Create Systemd Service
+     #vi /etc/systemd/system/node_exporter.service
+[Unit]
+Description=Prometheus Node Exporter
+After=network.target
+
+[Service]
+User=node_exporter
+Group=node_exporter
+Type=simple
+ExecStart=/opt/node_exporter/node_exporter
+
+[Install]
+WantedBy=multi-user.target
+
+:wq! 
+
+Step 5:- Reload Systemd
+      #systemctl daemon-reload
+	  
+Step 6:- Enable Service
+      #systemctl enable --now node_exporter
+	  
+Step 7:- Check Status
+      #systemctl status node_exporter
+	  
+Step 8:- Open Firewall
+      #firewall-cmd --permanent --add-port=9100/tcp
+       #firewall-cmd --reload
+      #firewall-cmd --list-all
+
+Step 9:- Verify Open in browser:
+
+http://<jenkins-serverip>:9100/metrics	  
+
+=============================================================================
+
+Now to install Apache Exporter
+
+Step 1:-  Download Apache Exporter
+        #cd /opt 
+		#wget https://github.com/Lusitaniae/apache_exporter/releases/download/v1.0.9/apache_exporter-1.0.9.linux-amd64.tar.gz
+
+Step 2:-  Extract the files
+        #ls
+		#tar -xzf apache_exporter-1.0.9.linux-amd64.tar.gz
+        #mv apache_exporter-1.0.9.linux-amd64 apache_exporter
+        #ls
+		
+Step 3:- Create User
+        #useradd --no-create-home --shell /bin/false apache_exporter
+		
+Step 4:- Change Ownership
+        #chown -R apache_exporter:apache_exporter /opt/apache_exporter
+		
+Step 5:- Create Systemd Service
+        #vi /etc/systemd/system/apache_exporter.service
+	[Unit]
+Description=Prometheus Apache Exporter
+After=network.target
+
+[Service]
+User=apache_exporter
+Group=apache_exporter
+Type=simple
+
+ExecStart=/opt/apache_exporter/apache_exporter \
+  --scrape_uri=http://localhost/server-status?auto
+
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
+
+:wq!
+
+Step 6:- Reload Systemd
+      #systemctl daemon-reload
+
+Step 7:- Enable Service
+      #systemctl enable --now  apache_exporter
+	  
+Step 8:- Check Status
+      #systemctl status apache_exporter
+	  
+Step 9:- Open Firewall
+      #firewall-cmd --permanent --add-port=9117/tcp
+	  #firewall-cmd --reload
+	  #firewall-cmd --list-all
+	  
+
+Step 9:- Verify Open in browser:
+
+http://<jenkins-serverip>:9117/metrics	  
+
+
+
+Step 10: Test the Alerts
+Test High CPU Utilization
+
+Install the stress utility.
+install epel because stress package is avaible in epel repo
+  #yum install -y https://dl.fedoraproject.org/pub/epel/epel-release-latest-9.noarch.rpm
+  #yum install stress -y
+  
+Generate CPU load.
+  #stress --cpu 4 --timeout 300
+go to grafana server and check cpu utilization
+
+Step 11:- Test Apache Service Down
+   #yum install httpd -y
+   #systemctl stop httpd 
+   #systemctl start httpd
+
+Step 12:- now go to jenkins dashboard create one job 
+         job name:-My_First_Maven_Project
+            git:- to paste github account FormFillApp repo url
+			branch:-main
+			Goals and options:-clean & install  {this is wrong command to failed the jenkins job}
+			apply and save and build a job 
+so we can easily monitor jenkins failed alerts in prometheus and grafana.
+
+Step 13:- to Monitor with email 
+ Generate a Gmail App Password
+
+Since you're using Gmail (shitalk0609@gmail.com), you cannot use your normal Gmail password.
+to set app password 
+https://myaccount.google.com/apppasswords
+App name:-Alertmanager
+Click Create.
+Google provide 16-character App Password 
+
+Step 14:- On the Prometheus Server (192.168.58.133)
+open below file and paster apppasswords to this file 
+# vi /etc/alertmanager/alertmanager.yml
+Replace:
+
+YOUR_GMAIL_APP_PASSWORD
+
+Step 15:- Validate the Configuration
+/opt/alertmanager/amtool check-config /etc/alertmanager/alertmanager.yml
+Expected output:
+SUCCESS
+
+Step 16:- Restart Alertmanager & prometheus
+   #systemctl restart alertmanager
+   #systemctl restart prometheus
+   
+
+Step 17:- To Integrate Jenkins Success and Failed Job ,CPU,Memeory,Apache, disk utilization alerts
+via Grafana email 
+Now go back to grafana server 
+and open the below file
+ #vim /etc/grafana/grafana.ini
+ go to last line
+ make sure demarktession for this line
+############################below settings done by shital K#############
+[smtp]
+enabled = true
+host = smtp.gmail.com:587
+user = shitalk0609@gmail.com
+password = YOUR_GMAIL_APP_PASSWORD
+from_address = shitalk@gmail.com
+from_name = Grafana Alerts
+skip_verify = true
+startTLS_policy = OpportunisticStartTLS
+
+:wq!   ----->{force fully save and quite}
+
+Now then restart grafana service
+ #systemctl restart grafana-server
+ 
+Step 18:- Now go to grafana dashboard
+     go to Alerting 
+	 inside Alert rules
+	create new alert rule
+	
+i)Enter alert rule name:- Grafana Alert
+	ii) Define query and alert condition
+	    Metric:- 
+		Label fileters:- jenkins_job
+		Select value:- My_First_Job
+		Run queries
+	iii) Add folder and labels
+	    New folder:- Grafana
+		
+	iv) Set evaluation behavior
+	    add evaluation group
+		name:- grafana-Alerts
+		evaluation_interval:- 1m
+		and then create
+		
+	v) Configure notifications
+	    click on View or create contact points
+		then new tab is open 
+		click on new contact points
+		Name:- Jenkins_Job_Alerts_Latest
+		Integratation:- Email
+		Address:- your personal email id
+		and then click on Test 
+		Notification Message:- Custom
+		Summary:- Jenkins_Job_Failed
+		and send notification 
+and then save contact point
+
+Step 10:- Now check your personal email id 
+         you will receive TestAlert Grafana 
+		 it will see Jenkins_Job_Failed 
+		 alerts

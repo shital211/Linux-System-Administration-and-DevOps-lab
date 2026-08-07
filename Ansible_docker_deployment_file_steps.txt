@@ -1,0 +1,25 @@
+---
+- name: Build image and deploy image in container
+  hosts: web
+  become: yes
+
+  tasks:
+    # stop docker container
+    - name: stop existing docker container 
+      command: docker stop tomcatv1
+
+    # clean and delete stopped docker container
+    - name: delete docker container 
+      command: docker rm tomcatv1
+
+    # clean and delete stopped docker image
+    - name: delete docker image
+      command: docker rmi tomcat:v1
+
+    # build docker image
+    - name: build docker image
+      command: docker build -t tomcat:v1 /opt/docker -f /opt/docker/Dockerfile  
+
+    # start Docker container with new image
+    - name: start new docker container
+      command: docker run -d --name tomcatv1 -p 8086:8080 tomcat:v1 

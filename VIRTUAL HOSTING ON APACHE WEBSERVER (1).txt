@@ -1,0 +1,86 @@
+                            *************************VIRTUAL HOSTING ON APACHE WEBSERVER USING SELF SIGNED CERTIFICATE ON PORT 443*****************************
+
+Step 1 :  Take a Snapshot
+
+Step 2:   Configure yum repository
+          check by #yum repolist
+
+Step 3:   Install required Packages of httpd, openssl(for key generation), mod_ssl(ssl/tls module for Apache web server)
+
+          #yum install -y httpd.x86_64
+	  #yum install -y mod_ssl.x86_64
+	  #yum install -y openssl.x86_64
+
+Step 4:  Make a html page in cd /var/www/html with name index.html which we want to access over WEB
+Step 5:	 Make an entry of webserver's ip in /etc/hosts file with website's address 	
+           eg: 192.168.0.108 www.radical.com
+
+
+Step 6: Generate key with a .crt (a self signed request) 
+        #openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout radical.key -out radical.crt (can check both key and certificate in home directory)
+ 	
+Step 7: Place the key and certificate in Default SSL output directory 
+
+	#cp -r radical.crt /etc/pki/tls/certs
+        #cp -r radical.key /etc/pki/tls/private
+
+Step 8: ADD Default configuration files for SSL
+
+	#cd /etc/httpd/conf.d/, #ls
+	#vim ssl.conf-------->>>>>>>>>>>in line no 85 and 93 edit your key and certificates' path
+ 
+Step 9: Syntax check
+	#httpd -t or #apachectl configtest
+
+Step 10: Create the Virtual host configuration file for our website in #cd /etc/httpd/conf.d/
+	  	
+	 #vi mywebsite.conf
+
+# Ensure that Apache listens on port 443
+<VirtualHost *:443>
+SSLEngine on
+SSLCertificateFile /etc/pki/tls/certs/radical.crt
+SSLCertificateKeyFile /etc/pki/tls/private/radical.key
+DocumentRoot "/var/www/html"
+ServerName www.radical.com
+
+</VirtualHost>
+	  	
+Step 11:   Again Syntax check by #httpd -t
+
+Step 12:   Enable ssl and reload Apache
+	     #systemctl enable --now httpd
+             #systemctl restart httpd
+	 
+Step 13:  Disable firewall for local testing and remote testing
+		#systemctl stop firewalld.service
+		#setenforce 0
+
+
+#######################################################Local testing on rhel 8 server with ip 192.168.0.108#####################
+Open Firefox and in address bar---------------->>>>>>https://192.168.0.108
+(secure but not green due to self signed cert)
+Advanced, View Certificate to see details, Accept and cont to see our WEBPAGE 
+
+###################################################Remote testing from rhel 6#########################
+Open Firefox and in address bar---------------->>>>>>https://192.168.0.108
+(secure but not green due to self signed cert)
+Add exception, Get certificate to see all details, Confirm security exception to see our WEBPAGE
+
+
+Step 14: Firewall configuration to enable https service to port 443
+		#firewall-cmd --permanent --add-service=https
+ 	        #firewall-cmd --permanent --add-port=443/tcp
+ 	        #firewall-cmd --reload
+   
+
+####################################################################################
+this is command is to check output of ssl apache 443 by command
+
+
+openssl x509 -in radical.crt -noout -dates
+
+ 	  	
+
+
+          

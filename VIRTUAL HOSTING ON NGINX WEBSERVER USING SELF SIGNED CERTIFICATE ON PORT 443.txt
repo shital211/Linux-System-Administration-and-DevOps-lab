@@ -1,0 +1,210 @@
+*************************VIRTUAL HOSTING ON NGINX WEBSERVER USING SELF SIGNED CERTIFICATE ON PORT 443*****************************
+
+Step 1: Take Snapshot
+        Name:-Before_install_nginx_server_self_sigend_Cert_datetime
+
+
+Step 2: Set Static IP on VM {PutSwith is Bridge}
+        via nmtui & nmcli command
+		Server_IP:- 10.0.0.100
+		CIDR:- 255.0.0.0
+		Gateway/Router:- 10.0.0.1
+
+
+Step 3:- Set Hostname
+         #hostnamectl set-hostname www.radical.com
+
+Step 4:- Mount CD/DVD to /mnt   
+         #mount /dev/cdrom /mnt
+		 #df -hT /mnt
+		 
+Step 5:- Create file based repolist
+         #vim /etc/yum.repos.d/rhel9.repo
+		 
+[BaseOS]
+name=This is file based BaseOS Repo
+baseurl=file:///mnt/BaseOS
+gpgcheck=0
+enabled=1
+
+
+
+[AppStream]
+name=This is file based AppStream Repo
+baseurl=file:///mnt/AppStream
+gpgcheck=0
+enabled=1
+
+:wq!   ----->{Forcefully save & quite}
+
+         #yum clean all
+         #yum repolist all
+		 
+		 
+Step 6:- Install the required packages
+        #yum install -y nginx
+		#yum install -y openssl
+		
+	Verify installation:
+	    #nginx -v
+		
+Step 7:- Add hostname entry
+
+Edit the hosts file.
+        #vim /etc/hosts
+	10.0.0.100  www.radical.com
+	
+:wq!  ------>{Forcefully save & quite}
+
+
+Step 8:- Create a web page
+        Create an HTML page that will be served over HTTPS.
+		#cd /usr/share/nginx/html
+		#vim index.html
+<html>
+<head>
+<title>Welcome</title>
+</head>
+<body>
+<h1>Welcome to Nginx HTTPS Server</h1>
+</body>
+</html>
+
+:wq! ------>{Forcefully save & quite} 
+
+Step 9:- Generate a Self-Signed SSL Certificate
+         Create a directory for SSL certificates.
+		 
+		#mkdir -p /etc/nginx/ssl 
+	Generate the private key and certificate.
+	    #openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
+-keyout /etc/nginx/ssl/radical.key \
+-out /etc/nginx/ssl/radical.crt
+
+    Verify:
+	    #ls /etc/nginx/ssl
+	Output:
+      radical.crt
+      radical.key	
+	  
+Step 10:- Configure SSL Virtual Host
+Edit the default Nginx configuration or create a new virtual host configuration.
+        #cd /etc/nginx/conf.d
+		#vi mywebsite.conf
+server {
+    listen 443 ssl;
+    server_name www.radical.com;
+
+    ssl_certificate     /etc/nginx/ssl/radical.crt;
+    ssl_certificate_key /etc/nginx/ssl/radical.key;
+
+    root /usr/share/nginx/html;
+    index index.html index.htm;
+
+    location / {
+        try_files $uri $uri/ =404;
+    }
+}
+
+:wq! ------>{Forcefully save & quite} 
+		 
+
+Step 11:-  Syntax Check
+Verify the Nginx configuration.		 
+      #nginx -t
+Expected output:
+nginx: the configuration file /etc/nginx/nginx.conf syntax is ok
+nginx: configuration file /etc/nginx/nginx.conf test is successful
+
+Step 12:- Enable and Restart Nginx  
+      #systemctl enable --now nginx
+	  #systemctl restart nginx
+	 Check service status.
+	  #systemctl status nginx
+	  
+Step 13:- Disable Firewall (For Local Testing Only)
+      # systemctl stop firewalld
+      # setenforce 0
+	  #getenforce
+	  
+Step 14:- Local Testing {Open Firefox and browser}
+      https://192.168.0.108
+(OR)
+      https://www.radical.com
+	  
+Since the certificate is self-signed:
+
+Click Advanced
+View the certificate
+Accept the risk and continue
+
+The webpage should be displayed.
+=================================================================================
+
+
+Step 15:- Remote Testing (RHEL 6 or Another Client/RHEL-7/8/9/10)
+
+Note:- Your client should be same network class 
+
+Set Static IP on VM {PutSwith is Bridge}
+        via nmtui & nmcli command
+		Server_IP:- 10.0.0.101
+		CIDR:- 255.0.0.0
+		Gateway/Router:- 10.0.0.1
+
+#vi /etc/hosts             {this is local dns file to put entry of server ip & hostname}
+10.0.0.100 www.radical.com               
+
+:wq!   ------>{Forcefully save & quite} 
+
+Open Firefox and browse:
+
+https://10.0.0.100
+(OR)
+https://www.radical.com
+
+Since the certificate is self-signed:
+
+Add Exception
+Get Certificate
+Confirm Security Exception
+
+The webpage should load successfully.
+
+Step 16:- Configure Firewall for HTTPS {On Client Side}
+
+Instead of disabling the firewall permanently, allow HTTPS.
+
+#firewall-cmd --permanent --add-service=https
+#firewall-cmd --permanent --add-port=443/tcp
+#firewall-cmd --reload
+
+Verify:
+#firewall-cmd --list-all
+
+Final Directory Structure
+/etc/nginx/
+├── nginx.conf
+├── conf.d/
+│   └── radical.conf
+└── ssl/
+    ├── radical.crt
+    └── radical.key
+
+/usr/share/nginx/html/
+└── index.html
+
+
+Useful Commands
+# nginx -t                        {Check configuration syntax}
+# systemctl restart nginx          {Restart Nginx}
+# systemctl reload nginx          {Reload configuration}
+# systemctl status nginx           {Check service status}
+# ss -tlnp | grep 443              {Verify Nginx is listening on port 443}
+# curl -v https://10.0.0.100  {Test HTTPS from the command line}
+
+
+********************Thank You************************
+
+
+

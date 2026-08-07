@@ -1,0 +1,140 @@
+***Configuration of Mariadb-Server in RHEL-8 ***
+Take a Snapshot 
+snapshot name is :-before_installation_mariadb-server
+__________________________________________________________
+**Now ping to google & redhat:-
+#ping www.google.com
+#ping www.redhat.com
+__________________________________________________________________
+**Mount CD/DVD to /mnt:-
+#mount /dev/cdrom /mnt
+_________________________________________________________________
+**To Check Repo Status:-
+# yum repolist all
+_____________________________________________________________________________
+**Install Package:-
+ #yum install -y mariadb mariadb-server
+Port No:-3306
+____________________________________________________________________________
+**Start and enable service:-
+ #systemctl start   mariadb.service
+ #systemctl restart mariadb.service
+ #systemctl  status  mariadb.service
+ #systemctl enable --now  mariadb.service
+_____________________________________________________________________________
+**Stop Firewall:-
+ #systemctl stop firewalld
+_________________________________________________
+**Stop selinux:-
+ #setenforce 0
+________________________________________________
+**To Check Port is Listen or not:-
+ netstat -antlpu | grep 3306
+_______________________________________________________________________________
+** Secure the Mariadb Server:-
+ For login into datebase
+ #mysql -u  root
+ >show databases;
+ >exit;
+
+Note:-if we want secure installation of database perform following command
+       #mysql_secure_installation
+____________________________________________________________________________________
+** Login in the mysql:-
+ #mysql   -u    root   -p
+ >show databases;
+ >exit
+________________________________________________________________________________________
+** Add databases on the Mariadb server:-
+   login as a root user:-
+ #mysql  -u  root  -p
+
+Create a new Mariadb database called mydb1 Type the following command
+ >create database mydb1;
+ >show databases;
+________________________________________________________________________________________
+** Add users on the Mariadb server:-
+  create a new user called suraj for database called mydb1:-
+  
+  >grant all on mydb1.* to suraj@localhost identified by 'secretpassword';
+  >exit
+____________________________________________________________________________________
+** Connect to the Mariadb database using suraj account
+  #mysql  -u  suraj  -p
+  >show databases;
+  >exit
+__________________________________________________________________________________
+** login as the mysql root user to Create database:-
+  #mysql -u root -p
+ 
+  Sample outputs:-
+  MariaDB [(none)]>
+___________________________________________________________________________________
+** Add a database books:-
+   MariaDB[(none)]>create database books;
+   MariaDB[(none)]>show databases;
+________________________________________________________________________________
+** Now,database is created.Use a database with use command:-
+   MariaDB[(none)]>use books;
+   MariaDB[(none)]>
+____________________________________________________________________________________________
+** Create a table called students with id,name &email fields:-
+
+ MariaDB[(books)]>create table students (id INT,name VARCHAR(20),email VARCHAR(20));
+______________________________________________________________________________________________
+**To display your tables in books database:-
+  MariaDB[(books)]>show tables;
+______________________________________________________________________________________
+** Finally,add a data i.e. row to table books using INSERT statement:-
+  MariaDB[(books)]> insert into students (id,name,email) values(1,“Karan",“karan@live.com");
+_______________________________________________________________________________________________
+** Try to add few more rows to your table:-
+  MariaDB[(books)]> insert into students (id,name,email) values(2,"Priya","priya@gmail.com");
+  MariaDB[(books)]> insert into students (id,name,email) values(3,"Sachin","sachin@yahoo.com");
+___________________________________________________________________________________________________________
+** To display all rows i.e.data stored in students table:-
+   
+   MariaDB[(books)]> select * from students;
+_______________________________________________________________________________________________
+**Backup Databases:-
+   #mysqldump -u root -p books > /root/booksdb.sql
+   #cd /root
+   #ls
+   #cat booksdb.sql
+___________________________________________________________________________________
+** Delete Databases:-
+   #mysql  -u root -p
+   >drop database books;
+   >show databases;
+   >exit
+_____________________________________________________________________________________
+**Restore Databases:-
+  #mysql -u  root  -p
+  >create database  books;
+  >show databases;
+  >use books;
+  >show tables;
+  >quit
+
+ For restore database
+  #mysql -u  root -p books < /root/booksdb.sql
+_____________________________________________________________________________________
+**for verify:-
+  #mysql  -u  root -p
+  >use books;
+  >show tables;
+  >select * from students;
+  >quit
+___________________________________________________________________________________
+**Restart mariadb-server service
+#systemctl restart mariadb
+_____________________________________________________________________________________
+
+** Set firewall rule:-
+ #firewall-cmd --permanent --add-service=mysql
+ #firewall-cmd --reload
+ #firewall-cmd --list-all
+_________________________________________________________________________
+
+****How to Connected mariadb on client side
+#mysql -h server_ip -u  root -p

@@ -1,0 +1,27 @@
+#!/bin/bash
+
+# ==============================
+# Script Name : fullmbr_backup.sh
+# Description : Monthly MBR Backup Script
+# ==============================
+
+DATE=$(date +%Y-%m-%d_%H-%M-%S)
+BACKUP_DIR="/backup/fullmbr"
+
+# Change this when disk is different/according to your system
+DISK="/dev/sda"
+
+mkdir -p "$BACKUP_DIR"
+
+# Backup first 512 bytes (MBR)
+if dd if="$DISK" of="$BACKUP_DIR/fullmbr_backup_$DATE.img" bs=512 count=1 status=none
+then
+    echo "$(date): MBR Backup Successful" >> "$BACKUP_DIR/fullmbr_backup.log"
+else
+    echo "$(date): MBR Backup Failed" >> "$BACKUP_DIR/fullmbr_backup.log"
+fi
+
+#now Schedule with Cron
+# crontab -e   (***edit crontab***)
+#0 2 1 * * /root/fullmbr_backup.sh (***So it will run at 2:00 AM on the 1st day of every month********8)
+#crontab -l   (****************to check the crontab entry****)

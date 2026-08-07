@@ -1,0 +1,62 @@
+****Install Grafana on RHEL-9.8****
+
+Step 1: ping google and redhat on VM
+        #ping www.google.com
+        #ping www.redhat.com
+
+Step 2: Take Snapshot
+        Name:-Before_install_Grafana_server
+
+Step 3:- Set Hostname
+         #hostnamectl set-hostname grafana.radical.com
+
+Step 4:- Mount CD/DVD to /mnt   
+         #mount /dev/cdrom /mnt
+         #yum clean all
+         #yum repolist all
+
+Note:-to enabled file based repo
+
+Step 5:- Add the Grafana RPM Repository
+         #wget -q -O /tmp/grafana_gpg.key https://rpm.grafana.com/gpg.key
+		 #rpm --import /tmp/grafana_gpg.key
+		 #vi /etc/yum.repos.d/grafana.repo
+[grafana]
+name=Grafana
+baseurl=https://rpm.grafana.com
+repo_gpgcheck=1
+enabled=1
+gpgcheck=1
+gpgkey=https://rpm.grafana.com/gpg.key
+sslverify=1
+sslcacert=/etc/pki/tls/certs/ca-bundle.crt
+
+:wq!    ---->{forcefully save & quite}
+
+Step 6:- Install Grafana
+Once the repo is configured, install Grafana
+       #yum install grafana -y
+	   #grafana server --version
+	   
+Step 7:- Start and Enable Grafana Service
+       #systemctl start grafana-server.service
+	   #systemctl enable --now grafana-server.service
+	   #systemctl status  grafana-server.service
+	   
+	   
+Step 8:- Open the grafana port in firewall
+	   #firewall-cmd --permanent --add-port=3000/tcp
+	   #firewall-cmd --reload
+	   #firewall-cmd --list-all 
+       #netstat -antlpu | grep 3000
+	   #ss -antlpu | grep 3000		 
+	   
+Step 9:- Verify it’s working
+          Open any browser and type below url
+		  http://<your-server-ip>:3000
+		  
+The default login credentials are:-
+    Username: admin
+	Password: admin
+	
+****************Thank You!***********

@@ -1,0 +1,410 @@
+        ****Install Prometheus on RHEL-9****
+
+Step 1: ping google and redhat on VM
+        #ping www.google.com
+        #ping www.redhat.com
+
+Step 2: Take Snapshot
+        Name:-Before_install_prometheus_server
+
+Step 3:- Set Hostname
+         #hostnamectl set-hostname prometheus.radical.com
+
+Step 4:- Mount CD/DVD to /mnt   
+         #mount /dev/cdrom /mnt
+         #yum clean all
+         #yum repolist all
+
+Note:-to enabled file based repo
+
+Step 5:- Create a dedicated service account
+         #useradd --no-create-home --shell /bin/false prometheus
+		 
+Step 6:- Download Prometheus
+         Go to prometheus.io/download and find the latest stable version number.
+		 #cd /opt
+		 #wget https://github.com/prometheus/prometheus/releases/download/v3.12.0/prometheus-3.12.0.linux-amd64.tar.gz
+		 
+
+Step 7:- Extract the archive
+         #ls
+		 #tar -xvzf prometheus-3.12.0.linux-amd64.tar.gz
+		 #ls
+		 #mv prometheus-3.12.0.linux-amd64 prometheus
+		 #ls
+		 #cd prometheus
+		 
+Step 8:- Create directories and copy files
+         Create the standard directories:
+		 #mkdir -p /etc/prometheus
+		 #mkdir -p /var/lib/prometheus
+		 
+Step 9:- Copy the binaries to the system path
+         #cp prometheus promtool /usr/local/bin/
+		 
+Step 10:- Copy the config and web UI assets
+         #cp prometheus.yml /etc/prometheus/
+		 
+Step 11:- Set file ownership
+         #chown -R prometheus:prometheus /etc/prometheus
+		 #chown -R prometheus:prometheus /var/lib/prometheus
+		 #chown prometheus:prometheus /usr/local/bin/prometheus
+		 #chown prometheus:prometheus /usr/local/bin/promtool
+		 
+Note:- Without this step, Prometheus will start as the prometheus 
+user but be unable to read its config or write to the data directory. 
+You'll get permission denied at startup — confusing if you don't know where to look.
+
+Step 12:- Create the systemd service file
+         #vi /etc/systemd/system/prometheus.service
+		 
+[Unit]
+Description=Prometheus Monitoring System
+Wants=network-online.target
+After=network-online.target
+[Service]
+User=prometheus
+Group=prometheus
+Type=simple
+Restart=on-failure
+ExecStart=/usr/local/bin/prometheus \
+  --config.file=/etc/prometheus/prometheus.yml \
+  --storage.tsdb.path=/var/lib/prometheus/ \
+  --web.console.templates=/etc/prometheus/consoles \
+  --web.console.libraries=/etc/prometheus/console_libraries
+[Install]
+WantedBy=multi-user.target
+
+:wq! ---->{forcefully save & quite}
+
+Step 13:- Start and enable the service
+         #systemctl daemon-reload
+		 #systemctl start prometheus
+		 #systemctl enable --now  prometheus
+		 #systemctl status   prometheus
+		 #prometheus --version
+		 
+Step 14:- Open the prometheus port in firewall
+         #firewall-cmd --permanent --add-port=9090/tcp
+		 #firewall-cmd --reload
+		 #firewall-cmd --list-all
+		 #netstat -antlpu | grep 9090
+		 #ss -antlpu | grep 9090
+		 
+Step 15:- Verify it’s working
+          Open any browser and type below url
+		  http://<your-server-ip>:9090
+		  
+You should see the Prometheus web UI. 
+Navigate to Status → Target health and confirm you see one target listed
+localhost:9090  |  State: UP
+That UP means Prometheus is successfully scraping its 
+own internal metrics — the installation is complete and working correctly.
+
+Now, Download Alertmanager on Prometheus Server
+
+Step 1: Download Alertmanager
+      #cd /opt
+	  #wget https://github.com/prometheus/alertmanager/releases/download/v0.33.1/alertmanager-0.33.1.linux-amd64.tar.gz
+       #ls
+	   
+Step 2: Extract
+      #tar -xvzf alertmanager-0.33.1.linux-amd64.tar.gz
+	  #ls
+	  #rm -rf alertmanager-0.33.1.linux-amd64.tar.gz
+	  #ls
+	  #mv alertmanager-0.33.1.linux-amd64/ alertmanager
+	  #ls
+	  
+Step 3: Create User
+      #useradd --no-create-home --shell /bin/false alertmanager
+	  
+Step 4: Change Ownership
+      #chown -R alertmanager:alertmanager /opt/alertmanager
+	  
+Step 5: Create Data Directory
+      #mkdir -p /var/lib/alertmanager
+	  #chown alertmanager:alertmanager /var/lib/alertmanager
+	  
+Step 6: Create Configuration
+      #mkdir -p /etc/alertmanager
+	  Create the configuration file:
+	  #vi /etc/alertmanager/alertmanager.yml
+global:
+  smtp_smarthost: 'smtp.gmail.com:587'
+  smtp_from: 'shitalk0609@gmail.com'
+  smtp_auth_username: 'shitalk0609@gmail.com'
+  smtp_auth_password: 'YOUR_GMAIL_APP_PASSWORD'
+  smtp_require_tls: true
+
+route:
+  receiver: 'email-notifications'
+  group_wait: 10s
+  group_interval: 30s
+  repeat_interval: 1h
+
+receivers:
+- name: 'email-notifications'
+  email_configs:
+  - to: 'shitalk0609@gmail.com'
+    send_resolved: true
+  
+:wq!
+Note:- Replace YOUR_GMAIL_APP_PASSWORD with your Gmail App Password (not your normal Gmail password).
+
+Step 7: Create Service
+     #vi /etc/systemd/system/alertmanager.service
+[Unit]
+Description=Prometheus Alertmanager
+After=network.target
+
+[Service]
+User=alertmanager
+Group=alertmanager
+
+ExecStart=/opt/alertmanager/alertmanager \
+--config.file=/etc/alertmanager/alertmanager.yml \
+--storage.path=/var/lib/alertmanager
+
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
+
+Step 8: Reload Systemd
+   #systemctl daemon-reload
+   
+Step 9: Enable Alertmanager
+   #systemctl enable --now  alertmanager
+
+Step 10: Start Alertmanager
+   #systemctl start alertmanager
+   
+Step 11: Check Status
+   #systemctl status alertmanager
+   
+Step 12: Open Firewall
+   #firewall-cmd --permanent --add-port=9093/tcp
+   #firewall-cmd --reload
+   #firewall-cmd --list-all
+   
+Step 13: Verify
+   http://<prometheus server-ip>:9093
+	  
+
+
+Now Configure Prometheus
+
+Step 14:- Edit the Prometheus configuration file.
+    #vi /etc/prometheus/prometheus.yml
+remove existing line & add below line 
+
+global:
+  scrape_interval: 15s
+
+rule_files:
+  - "/etc/prometheus/alert.rules.yml"
+
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets:
+            - "192.168.58.133:9093"
+
+scrape_configs:
+
+  - job_name: 'prometheus'
+    static_configs:
+      - targets:
+          - 'localhost:9090'
+
+  - job_name: 'jenkins'
+    metrics_path: /prometheus
+    static_configs:
+      - targets:
+          - '192.168.58.134:8080'
+
+  - job_name: 'node'
+    static_configs:
+      - targets:
+          - '192.168.58.134:9100'
+
+  - job_name: 'apache'
+    static_configs:
+      - targets:
+          - '192.168.58.134:9117'
+		  
+:wq!
+   #systemctl restart prometheus
+
+Step 15:-Verify Prometheus Targets
+   http://<prometheus server-ip>:9090/targets
+   
+ Verify that the following targets are in the UP state.
+ | Job             | Status |
+| --------------- | ------ |
+| Prometheus      | UP     |
+| Jenkins         | UP     |
+| Node Exporter   | UP     |
+| Apache Exporter | UP     |
+
+
+Step 16:- Create Alert Rules
+    #vi /etc/prometheus/alert.rules.yml
+groups:
+
+- name: MonitoringAlerts
+
+  rules:
+
+  - alert: HighCPUUsage
+    expr: 100 - (avg by(instance)(rate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 80
+    for: 5m
+    labels:
+      severity: critical
+    annotations:
+      summary: "High CPU Utilization"
+      description: "CPU utilization is above 80%."
+
+  - alert: ApacheServiceDown
+    expr: up{job="apache"} == 0
+    for: 1m
+    labels:
+      severity: critical
+    annotations:
+      summary: "Apache Service Down"
+      description: "Apache service is not reachable."
+
+  - alert: JenkinsBuildFailed
+    expr: default_jenkins_builds_last_build_result_ordinal == 2
+    for: 1m
+    labels:
+      severity: critical
+    annotations:
+      summary: "Jenkins Build Failed"
+      description: "The latest Jenkins build has failed."
+	  
+:wq!
+
+Restart Prometheus.
+    #systemctl restart prometheus
+	#systemctl status  prometheus
+	
+Step 17: Configure Grafana
+
+Log in to Grafana.
+
+http://<grafana server-ip>:3000
+
+Navigate to:
+Connections
+→ Data Sources
+→ Add Data Source
+→ Prometheus
+
+Configure the Prometheus URL:
+http://<prometheus server-ip>:9090
+Click Save & Test.
+
+Expected message:
+
+Data source is working.
+
+Step 18: Create Grafana Dashboard
+
+Create a new dashboard and add the following panels.
+
+Panel 1: CPU Utilization
+promql
+100 - (avg by(instance)(rate(node_cpu_seconds_total{mode="idle"}[5m])) * 100)
+run queries
+Visualization:
+Gauge
+Panel option
+inside Title: CPU Utilization and save the dashboard
+
+Now add Panel 2: Memory Utilization
+promql
+100 * (1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes))
+run queries
+
+Visualization:
+Gauge
+Panel option
+inside Title:Memory Utilization and save the dashboard
+
+Panel 3: Apache Service Status
+promql
+apache_up
+run queries
+Visualization:
+Stat
+scroll down 
+Click + Add value mapping.
+| Value | Display text | Color |
+| ----- | ------------ | ----- |
+| `1`   | `UP`         | Green |
+| `0`   | `DOWN`       | Red   |
+
+save with name Apache Service Status
+
+Panel 4: Jenkins Build Status
+promql
+default_jenkins_builds_last_build_result_ordinal
+jenkins_plugins_failed
+run queries
+Visualization:
+Stat
+scroll down 
+Click + Add value mapping.
+Value | Display text | Color |
+| ----- | ------------ | ----- |
+| `1`   | `Success`         | Green |
+| `0`   | `Failed`       | Red   
+save with name Jenkins Build Status
+
+Panel 5: Running Jenkins Builds
+promql
+default_jenkins_runs_running_builds
+Visualization:
+Stat
+save with name Running Jenkins Builds
+
+check alertmanager
+http://<prometheus server-ip>:9093/#/alerts
+
+Panel 6: Disk Utilization (%)
+PromQL Query
+100 - (
+  (node_filesystem_avail_bytes{mountpoint="/",fstype!~"tmpfs|overlay"}
+   * 100)
+  /
+  node_filesystem_size_bytes{mountpoint="/",fstype!~"tmpfs|overlay"}
+)
+
+This query shows the percentage of disk space used on the root (/) filesystem.
+
+Visualization
+Type: Gauge
+Unit: Percent (0-100)
+Min: 0
+Max: 100
+Thresholds
+
+Configure the thresholds as follows:
+| Color     | Value |
+| --------- | ----- |
+| 🟢 Green  | 0     |
+| 🟡 Yellow | 70    |
+| 🔴 Red    | 90    |
+
+This means:
+
+0–70% → Green (Healthy)
+70–90% → Yellow (Warning)
+90–100% → Red (Critical)
+
+save with name Running Disk Utilization (%)
+
+Now Test the Alerts on jenkins server 
+so go back to jenkins server perform the steps 

@@ -1,0 +1,628 @@
+*****How to install Nagios Server and Nagios Agent on RHEL-9*****
+
+On Server Side
+
+Step 1) Check the internet connectivity
+            #ping www.google.com
+            #ping www.redhat.com
+
+Step 2) Take a Snapshot
+             Name:- Before_Install_Nagios_Server
+
+Step 3) Set Hostname
+            #hostnamectl set-hostname nagiossrv.example.com
+
+Step 4) Mount CD/DVD to /mnt
+            #mount /dev/cdrom /mnt
+            
+Step 5) to check repository
+         #yum clean all
+         #yum repolist all
+
+Step 6) Install Apache and PHP
+        #yum install  -y httpd
+        #systemctl enable --now httpd
+	#httpd -v
+		
+Step 7) allow port 80 on the firewall as shown.
+        #firewall-cmd --add-port=80/tcp --permanent
+		#firewall-cmd --reload
+		
+Step 8) we will install PHP from the Remi repository which provides the latest PHP versions
+        #dnf install dnf-utils http://rpms.remirepo.net/enterprise/remi-release-9.rpm
+		
+Once enabled, install PHP and associated PHP modules
+        #dnf install php php-gd php-opcache php-curl -y
+		#php --version   {to check php version}
+		#systemctl enable --now php-fpm
+		
+Step 9) Configure SELinux
+        #sed -i 's/SELINUX=.*/SELINUX=permissive/g' /etc/selinux/config
+		#setenforce 0
+		
+Step 10) Download Nagios Core
+        to download and install Nagios core. 
+		Before you do so, install EPEL repository and some dependencies and development libraries as shown.
+		#dnf install -y https://dl.fedoraproject.org/pub/epel/epel-release-latest-9.noarch.rpm
+		#dnf install gcc glibc glibc-common gd gd-devel make net-snmp openssl-devel unzip wget gettext autoconf net-snmp-utils postfix automake perl-Net-SNMP -y
+		#cd /opt
+		#wget https://assets.nagios.com/downloads/nagioscore/releases/nagios-4.4.11.tar.gz
+		#ls
+		#tar -xvf nagios-4.4.11.tar.gz
+		move the uncompressed Nagios folder to the /usr/src/nagios directory.
+		#mv nagios-4.4.11 /usr/src/nagios
+		#cd /usr/src/nagios
+	Then compile Nagios using the following commands.
+	    #./configure
+		#make all
+		
+Step 11) Create Nagios User and Group
+	    #make install-groups-users	
+      Next, add the Apache user to the Nagios group.
+	    #usermod -a -G nagios apache
+		
+Step 12) Install Nagios Core
+        #make install-init
+	Once that’s done, create an external command directory for Nagios to process commands from external applications.
+	    #make install commandmode
+	 Next, install sample configuration files.
+	    #make install-config
+	 Be sure to also install sample Apache configuration files.
+	    #make install-webconf
+	 For all the changes to come into effect, restart the Apache web server.
+	    #systemctl restart httpd
+	 Then initialize the systemd unit file as shown.
+	    #make install-daemoninit
+		
+Step 13) Enable HTTP Authentication 
+	    #htpasswd -c /usr/local/nagios/etc/htpasswd.users nagiosadmin
+	password:- redhat
+	
+Step 14) Install Nagios Core Plugins
+        #cd /opt
+		#wget https://github.com/nagios-plugins/nagios-plugins/releases/download/release-2.4.4/nagios-plugins-2.4.4.tar.gz
+	Next extract the tarball file.
+	    #tar -xvf nagios-plugins-2.4.4.tar.gz
+	Next, move the extracted folder to the /usr/src/ directory.
+	    #mv nagios-plugins-2.4.4 /usr/src/nagios-plugins
+	Some dependencies are required by Nagios plugins to function as expected. Install them as follows.
+	    #dnf install openssl-devel net-snmp-utils postgresql-devel openssh-clients lm_sensors perl-Net-SNMP openldap-devel bind-utils samba-client fping -y
+		
+	To install the plugins, navigate to the /usr/src/nagios-plugins directory.
+	    #cd /usr/src/nagios-plugins
+		#ls
+	Then compile the source code as follows.
+	    #./configure
+		#make
+		#make install
+		
+Step 15) Start and Enable Nagios Core daemon
+       Before you start the Nagios server, run the following commands:
+	   #mkdir /usr/local/nagios/var/rw
+	   #chown nagios.nagios /usr/local/nagios/var/rw
+	 Now start the Nagios Core server and confirm its status.
+	   #systemctl start nagios
+	   #systemctl status nagios
+	   
+Step 16)  Access Nagios Core Web UI
+   Finally, access the Nagios web interface by navigating to the following server IP address.
+
+        http://server-ip/nagios
+	Username:-nagiosadmin
+	Password:-redhat
+	
+***On Client Side****
+
+Step 17) Check the internet connectivity
+            #ping www.google.com
+            #ping www.redhat.com
+
+Step 18) Take a Snapshot
+             Name:- Before_Install_Nagios_Client
+
+Step 19) Set Hostname
+            #hostnamectl set-hostname node1.example.com
+
+Step 20) Mount CD/DVD to /mnt
+            #mount /dev/cdrom /mnt
+            
+Step 21) to check repository
+         #yum clean all
+         #yum repolist all
+
+Step 22) Install EPEL repository
+         #dnf install -y https://dl.fedoraproject.org/pub/epel/epel-release-latest-9.noarch.rpm
+		 
+Step 23) Install NRPE and Nagios plugins
+         #dnf install nrpe nagios-plugins-all -y
+ #dnf install nagios-plugins-nrpe nagios-plugins-load nagios-plugins-disk nagios-plugins-procs nagios-plugins-users -y
+		
+Step 24) Configure NRPE
+         #vim /etc/nagios/nrpe.cfg
+	Find and modify the following lines:
+	     allowed_hosts=127.0.0.1,192.168.125.100  
+Replace 192.168.125.100 with your Nagios server’s IP.
+
+Step 25) Enable and start NRPE service
+        #systemctl enable --now nrpe 
+		#systemctl status nrpe 
+		
+Now add port in firewall
+    #firewall-cmd --permanent --add-port=5666/tcp
+    #firewall-cmd --reload
+    #firewall-cmd --list-all
+	
+On Server Side	
+
+Step 26) Install the NRPE plugin (on Nagios Server)
+        #dnf install nagios-plugins-nrpe -y
+		
+Step 27) Test NRPE from Nagios server
+        #/usr/lib64/nagios/plugins/check_nrpe -H <client_ip>
+		
+Step 28) Add host in Nagios server
+         #mkdir -p /usr/local/nagios/etc/servers
+	#chown nagios:nagios /usr/local/nagios/etc/servers
+        #vim /usr/local/nagios/etc/servers/rhel9client.cfg
+		
+define host {
+    use                     linux-server
+    host_name               node1.example.com
+    alias                   Node1 RHEL9 Client
+    address                 192.168.125.131
+    max_check_attempts      5
+    check_period            24x7
+    notification_interval   30
+    notification_period     24x7
+}
+
+define service {
+    use                     generic-service
+    host_name               node1.example.com
+    service_description     PING
+    check_command           check_ping!100.0,20%!500.0,60%
+}
+
+define service {
+    use                     generic-service
+    host_name               node1.example.com
+    service_description     NRPE Load
+    check_command           check_nrpe!check_load
+}
+
+define service {
+    use                     generic-service
+    host_name               node1.example.com
+    service_description     NRPE Disk
+    check_command           check_nrpe!check_disk
+}
+
+
+:wq!
+ 
+
+   Link the folder in main Nagios config
+    #vim /usr/local/nagios/etc/nagios.cfg
+Find (or add if missing):
+    cfg_dir=/usr/local/nagios/etc/servers     {uncomment the line}
+
+Save and exit
+
+	  #vim /usr/local/nagios/etc/objects/commands.cfg
+	  
+define command {
+    command_name    check_nrpe
+    command_line    /usr/lib64/nagios/plugins/check_nrpe -H $HOSTADDRESS$ -c $ARG1$
+}
+
+:wq!
+
+Step 29) Verify configuration again
+    #/usr/local/nagios/bin/nagios -v /usr/local/nagios/etc/nagios.cfg
+	
+Step 30) Restart Nagios
+   #systemctl restart nagios
+   #systemctl status nagios
+   
+Step 31) Verify in Nagios Web UI
+
+Refresh the web UI
+
+Now go back to your browser → http://server-ip/nagios
+
+Click Hosts → Summary
+
+You should now see node1.example.com listed below localhost.
+
+
+
+your Nagios dashboard is working correctly, 
+and now you want to see a CPU utilization alert for node1 (your RHEL9 client).
+
+Step 32) Make sure NRPE is working on node1 (client)
+
+On your Nagios Server, run this test:
+ /usr/lib64/nagios/plugins/check_nrpe -H 192.168.125.131
+
+Step 33) Enable CPU check command on the client {On your client machine (node1)}
+Open NRPE config file
+   #vim /etc/nagios/nrpe.cfg
+  Add below line
+command[check_cpu]=/usr/lib64/nagios/plugins/check_cpu_stats.sh -w 80 -c 90
+
+If check_cpu_stats.sh doesn’t exist, use check_load as an alternative:
+ 
+command[check_load]=/usr/lib64/nagios/plugins/check_load -w 5,4,3 -c 10,6,4
+
+command[check_disk]=/usr/lib64/nagios/plugins/check_disk -w 20% -c 10% -p /
+
+:wq!  
+
+Step 34) Restart NRPE service
+     #systemctl restart nrpe
+	 #systemctl status nrpe
+	 
+Step 35) Add CPU service check on Nagios Server
+
+On the Nagios Server, open your client’s config file:
+     #vim /usr/local/nagios/etc/servers/rhel9client.cfg
+	 
+Add this section below the existing services:
+    define service {
+    use                     generic-service
+    host_name               node1.example.com
+    service_description     CPU Utilization
+    check_command           check_nrpe!check_load
+}
+
+:wq!
+
+Step 36) Test the Nagios configuration
+    #/usr/local/nagios/bin/nagios -v /usr/local/nagios/etc/nagios.cfg
+  
+  Then restart Nagios:
+    #systemctl restart nagios
+	
+	
+Step 37) Trigger a CPU alert (for testing)
+
+On the client (node1), run:
+
+#dd if=/dev/zero of=/dev/null &
+
+
+This will push CPU usage high.
+
+After 1–2 minutes, go back to your Nagios web dashboard → Services,
+you’ll see something like:
+
+CRITICAL - Load average = 15.0 (Threshold 10.0)
+
+
+now your Nagios setup is ready for real-world monitoring.
+Let’s configure alerts for both:
+
+1)httpd service down
+2️)Disk space low (disk failure)
+
+Step 38) Make sure NRPE works (Quick check)
+On Nagios server:
+/usr/lib64/nagios/plugins/check_nrpe -H 192.168.125.131
+
+Step 39) Add NRPE commands on client (node1)
+
+On your client (RHEL9) machine:
+
+Open NRPE configuration:
+   #vi /etc/nagios/nrpe.cfg
+  At the bottom, add the following:
+ 
+ # Check httpd service status
+command[check_httpd]=/usr/lib64/nagios/plugins/check_procs -c 1: -C httpd
+
+:wq!
+
+Step 40) restart NRPE
+   #systemctl restart nrpe
+   #systemctl status nrpe
+   
+STEP 41) Add service checks in Nagios server config
+
+On your Nagios server
+    #vim /usr/local/nagios/etc/servers/rhel9client.cfg
+	
+add this is line at end 
+
+define service {
+    use                     generic-service
+    host_name               node1.example.com
+    service_description     HTTPD Service Status
+    check_command           check_nrpe!check_httpd
+}
+
+:wq!
+
+
+Step 42) Verify config and restart Nagios
+     #/usr/local/nagios/bin/nagios -v /usr/local/nagios/etc/nagios.cfg
+	 #systemctl restart nagios
+	 
+Step 43) Trigger test alerts
+     #yum install -y httpd
+	 #systemctl enable --now httpd
+     #systemctl status httpd
+	 #kill -9 pid
+	 #systemctl status httpd
+	 
+Wait 1–2 minutes → refresh Nagios web dashboard.
+You should see:
+
+CRITICAL - 0 processes with command name 'httpd'
+
+
+**************************How to configure mail on nagios server*************************
+Step 1:Enable 2-Step Verification
+
+to set app password 
+https://myaccount.google.com/apppasswords
+
+Google Account → Security
+App passwords
+Select:
+App: Mail
+Device: Other
+Name: Nagios
+Google 16-character password generate 
+
+Step 2: Install Packages (Nagios Server)
+#dnf install postfix cyrus-sasl cyrus-sasl-plain mailx -y
+##dnf install s-nail -y
+
+Enable postfix:
+#systemctl enable --now postfix
+
+Step 3: Configure Postfix
+#vi /etc/postfix/main.cf                   
+
+relayhost = [smtp.gmail.com]:587
+smtp_use_tls = yes
+smtp_tls_security_level = encrypt
+smtp_sasl_auth_enable = yes
+smtp_sasl_password_maps = hash:/etc/postfix/sasl_passwd
+smtp_sasl_security_options = noanonymous
+smtp_sasl_mechanism_filter = plain, login
+inet_protocols = ipv4
+
+:wq!
+
+Database regenerate 
+#postmap /etc/postfix/sasl_passwd
+#chmod 600 /etc/postfix/sasl_passwd /etc/postfix/sasl_passwd.db
+#systemctl restart postfix
+#postqueue -f
+
+Step 5: Create Gmail Authentication File
+#vi /etc/postfix/sasl_passwd
+[smtp.gmail.com]:587 yourgmail@gmail.com:YOUR_APP_PASSWORD      <not space>
+
+Step 6: Secure the File
+#chmod 600 /etc/postfix/sasl_passwd
+Generate database:
+#postmap /etc/postfix/sasl_passwd
+Restart postfix
+#systemctl restart postfix
+
+Step 7: Test Email
+
+echo "Nagios Gmail Test" | mail -s "Test Mail" yourgmail@gmail.com
+
+Step 8: Configure Nagios Contact
+#vi /usr/local/nagios/etc/objects/contacts.cfg
+###############################################################################
+# CONTACTS
+###############################################################################
+
+define contact{
+    contact_name                    nagiosadmin
+    use                             generic-contact
+    alias                           Nagios Admin
+    email                           your_email@gmail.com
+}
+
+###############################################################################
+# CONTACT GROUPS
+###############################################################################
+
+define contactgroup{
+    contactgroup_name               admins
+    alias                           Nagios Administrators
+    members                         nagiosadmin
+}
+
+:wq!
+
+Step 9: Verify Notification Commands
+#grep notify-service-by-email /usr/local/nagios/etc/objects/commands.cfg
+#grep notify-host-by-email /usr/local/nagios/etc/objects/commands.cfg
+
+Step 10: Verify Nagios Configuration
+#/usr/local/nagios/bin/nagios -v /usr/local/nagios/etc/nagios.cfg
+#systemctl restart nagios
+
+
+
+
+[root@nagiossrv ~]# cat /usr/local/nagios/etc/objects/commands.cfg
+###############################################################################
+# COMMANDS.CFG - NAGIOS CORE 4.4.11
+###############################################################################
+
+
+###############################################################################
+# NOTIFICATION COMMANDS
+###############################################################################
+
+define command {
+
+    command_name    notify-host-by-email
+    command_line    /usr/bin/printf "To: $CONTACTEMAIL$\nSubject: ** $NOTIFICATIONTYPE$ Host Alert: $HOSTNAME$ is $HOSTSTATE$ **\n\n***** Nagios *****\n\nNotification Type: $NOTIFICATIONTYPE$\nHost: $HOSTNAME$\nState: $HOSTSTATE$\nAddress: $HOSTADDRESS$\nInfo: $HOSTOUTPUT$\n\nDate/Time: $LONGDATETIME$\n" | /usr/sbin/sendmail -t
+}
+
+
+define command {
+
+    command_name    notify-service-by-email
+    command_line    /usr/bin/printf "To: $CONTACTEMAIL$\nSubject: ** $NOTIFICATIONTYPE$ Service Alert: $HOSTALIAS$/$SERVICEDESC$ is $SERVICESTATE$ **\n\n***** Nagios *****\n\nNotification Type: $NOTIFICATIONTYPE$\n\nService: $SERVICEDESC$\nHost: $HOSTALIAS$\nAddress: $HOSTADDRESS$\nState: $SERVICESTATE$\n\nDate/Time: $LONGDATETIME$\n\nAdditional Info:\n\n$SERVICEOUTPUT$\n" | /usr/sbin/sendmail -t
+}
+
+
+
+###############################################################################
+# HOST CHECK COMMANDS
+###############################################################################
+
+define command {
+
+    command_name    check-host-alive
+    command_line    $USER1$/check_ping -H $HOSTADDRESS$ -w 3000.0,80% -c 5000.0,100% -p 5
+}
+
+
+
+###############################################################################
+# LOCAL SERVICE CHECK COMMANDS
+###############################################################################
+
+define command {
+
+    command_name    check_local_disk
+    command_line    $USER1$/check_disk -w $ARG1$ -c $ARG2$ -p $ARG3$
+}
+
+
+
+define command {
+
+    command_name    check_local_load
+    command_line    $USER1$/check_load -w $ARG1$ -c $ARG2$
+}
+
+
+
+define command {
+
+    command_name    check_local_procs
+    command_line    $USER1$/check_procs -w $ARG1$ -c $ARG2$ -s $ARG3$
+}
+
+
+
+define command {
+
+    command_name    check_local_users
+    command_line    $USER1$/check_users -w $ARG1$ -c $ARG2$
+}
+
+
+
+define command {
+
+    command_name    check_local_swap
+    command_line    $USER1$/check_swap -w $ARG1$ -c $ARG2$
+}
+
+
+
+###############################################################################
+# REMOTE SERVICE CHECK COMMANDS
+###############################################################################
+
+define command {
+
+    command_name    check_ftp
+    command_line    $USER1$/check_ftp -H $HOSTADDRESS$ $ARG1$
+}
+
+
+
+define command {
+
+    command_name    check_http
+    command_line    $USER1$/check_http -I $HOSTADDRESS$ $ARG1$
+}
+
+
+
+define command {
+
+    command_name    check_ssh
+    command_line    $USER1$/check_ssh $ARG1$ $HOSTADDRESS$
+}
+
+
+
+define command {
+
+    command_name    check_ping
+    command_line    $USER1$/check_ping -H $HOSTADDRESS$ -w $ARG1$ -c $ARG2$ -p 5
+}
+
+
+
+define command {
+
+    command_name    check_tcp
+    command_line    $USER1$/check_tcp -H $HOSTADDRESS$ -p $ARG1$ $ARG2$
+}
+
+
+
+define command {
+
+    command_name    check_udp
+    command_line    $USER1$/check_udp -H $HOSTADDRESS$ -p $ARG1$ $ARG2$
+}
+
+
+
+define command {
+
+    command_name    check_nt
+    command_line    $USER1$/check_nt -H $HOSTADDRESS$ -p 12489 -v $ARG1$ $ARG2$
+}
+
+
+
+###############################################################################
+# PERFORMANCE DATA COMMANDS
+###############################################################################
+
+define command {
+
+    command_name    process-host-perfdata
+    command_line    /usr/bin/printf "%b" "$LASTHOSTCHECK$\t$HOSTNAME$\t$HOSTSTATE$\t$HOSTATTEMPT$\t$HOSTSTATETYPE$\t$HOSTEXECUTIONTIME$\t$HOSTOUTPUT$\t$HOSTPERFDATA$\n" >> /usr/local/nagios/var/host-perfdata.out
+}
+
+
+
+define command {
+
+    command_name    process-service-perfdata
+    command_line    /usr/bin/printf "%b" "$LASTSERVICECHECK$\t$HOSTNAME$\t$SERVICEDESC$\t$SERVICESTATE$\t$SERVICEATTEMPT$\t$SERVICESTATETYPE$\t$SERVICEEXECUTIONTIME$\t$SERVICELATENCY$\t$SERVICEOUTPUT$\t$SERVICEPERFDATA$\n" >> /usr/local/nagios/var/service-perfdata.out
+}
+
+
+
+###############################################################################
+# NRPE COMMAND
+###############################################################################
+
+define command {
+
+    command_name    check_nrpe
+    command_line    /usr/lib64/nagios/plugins/check_nrpe -H $HOSTADDRESS$ -c $ARG1$
+}
+
+
+#/usr/local/nagios/bin/nagios -v /usr/local/nagios/etc/nagios.cfg
+#systemctl restart nagios

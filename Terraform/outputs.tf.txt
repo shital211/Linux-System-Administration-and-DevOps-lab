@@ -1,20 +1,19 @@
-output "iam_user_name" {
-  description = "IAM User Name"
-  value       = aws_iam_user.terraform_user.name
+output "vpc_id" {
+  description = "VPC ID"
+  value       = aws_vpc.main_vpc.id
 }
 
-output "iam_user_arn" {
-  description = "IAM User ARN"
-  value       = aws_iam_user.terraform_user.arn
+output "subnet_id" {
+  description = "Public Subnet ID"
+  value       = aws_subnet.public_subnet.id
 }
 
-output "access_key_id" {
-  description = "Access Key ID"
-  value       = aws_iam_access_key.user_access_key.id
+output "internet_gateway_id" {
+  description = "Internet Gateway ID"
+  value       = aws_internet_gateway.igw.id
 }
 
-output "secret_access_key" {
-  description = "Secret Access Key"
-  value       = aws_iam_access_key.user_access_key.secret
-  sensitive   = true
+output "route_table_id" {
+  description = "Route Table ID"
+  value       = aws_route_table.public_rt.id
 }

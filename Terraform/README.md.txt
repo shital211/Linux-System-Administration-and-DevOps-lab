@@ -1,8 +1,8 @@
-# AWS IAM User using Terraform
+# AWS VPC using Terraform
 
 ## Overview
 
-This project demonstrates how to create an AWS Identity and Access Management (IAM) user using Terraform. It also attaches an Amazon S3 access policy and generates programmatic access credentials, illustrating how Terraform can be used to manage AWS identities and permissions.
+This project demonstrates how to provision a basic Virtual Private Cloud (VPC) infrastructure in AWS using Terraform. It creates a VPC, a public subnet, an Internet Gateway, a Route Table, and a Route Table Association to establish a functional public network environment.
 
 ---
 
@@ -10,14 +10,14 @@ This project demonstrates how to create an AWS Identity and Access Management (I
 
 * Terraform v1.5 or later
 * AWS CLI configured with the `terraform-user` profile
-* AWS account with permissions to create IAM users and manage IAM policies
+* AWS account with permissions to create VPC networking resources
 
 ---
 
 ## Project Structure
 
 ```text
-06-IAM-User/
+07-Basic-VPC/
 │
 ├── versions.tf
 ├── provider.tf
@@ -32,9 +32,11 @@ This project demonstrates how to create an AWS Identity and Access Management (I
 
 ## Infrastructure Created
 
-* One AWS IAM User
-* Amazon S3 Full Access Policy Attachment
-* Programmatic Access Key
+* One Virtual Private Cloud (VPC)
+* One Public Subnet
+* One Internet Gateway
+* One Route Table
+* One Route Table Association
 
 ---
 
@@ -82,9 +84,10 @@ terraform destroy
 
 After a successful deployment:
 
-* An IAM user is created.
-* The Amazon S3 Full Access policy is attached to the user.
-* Programmatic access credentials are generated.
+* A Virtual Private Cloud (VPC) is created.
+* A public subnet is associated with the route table.
+* An Internet Gateway is attached to the VPC.
+* The networking resources are visible in the AWS Management Console.
 * Terraform displays the created resource information after deployment.
 
 ---
@@ -98,8 +101,9 @@ This project was successfully completed as part of my Terraform hands-on practic
 ## Skills Demonstrated
 
 * Infrastructure as Code (IaC)
-* AWS IAM User Management
-* IAM Policy Attachments
-* AWS Identity and Access Management
+* AWS VPC Networking
+* Public Subnet Configuration
+* Internet Gateway Configuration
+* Route Table Management
 * Terraform Variables and Outputs
 * AWS Provider Configuration

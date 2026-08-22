@@ -1,8 +1,8 @@
-# Windows EC2 using Terraform
+# Linux EC2 with Security Group using Terraform
 
 ## Overview
 
-This project demonstrates how to provision a Microsoft Windows EC2 instance on AWS using Terraform. It includes the creation of a Security Group that allows Remote Desktop Protocol (RDP) access, enabling secure remote administration of the Windows server.
+This project demonstrates how to provision an Amazon Linux EC2 instance along with a Security Group using Terraform. The Security Group allows SSH access (TCP Port 22), enabling secure remote administration of the Linux server.
 
 ---
 
@@ -17,7 +17,7 @@ This project demonstrates how to provision a Microsoft Windows EC2 instance on A
 ## Project Structure
 
 ```text
-03-Windows-EC2/
+04-Linux-EC2-With-SecurityGroup/
 │
 ├── versions.tf
 ├── provider.tf
@@ -32,8 +32,8 @@ This project demonstrates how to provision a Microsoft Windows EC2 instance on A
 
 ## Infrastructure Created
 
-* One Microsoft Windows EC2 instance
-* One Security Group allowing RDP (TCP Port 3389)
+* One Amazon Linux EC2 instance
+* One Security Group allowing SSH (TCP Port 22)
 
 ---
 
@@ -81,8 +81,8 @@ terraform destroy
 
 After a successful deployment:
 
-* A Windows EC2 instance is created.
-* An RDP Security Group is attached to the instance.
+* An Amazon Linux EC2 instance is created.
+* A Security Group allowing SSH access is attached to the instance.
 * Terraform displays the resource details after deployment.
 * The instance is available in the AWS Management Console.
 
@@ -98,7 +98,7 @@ This project was successfully completed as part of my Terraform hands-on practic
 
 * Infrastructure as Code (IaC)
 * AWS EC2 Provisioning
-* Windows Server Deployment
 * AWS Security Groups
+* Linux Server Deployment
 * Terraform Variables and Outputs
 * AWS Provider Configuration

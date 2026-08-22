@@ -5,7 +5,7 @@ variable "aws_region" {
 }
 
 variable "ami_id" {
-  description = "Windows Server AMI ID"
+  description = "Amazon Linux AMI ID"
   type        = string
 }
 
@@ -16,12 +16,18 @@ variable "instance_type" {
 }
 
 variable "instance_name" {
-  description = "Windows EC2 Name"
+  description = "Linux EC2 Name"
   type        = string
-  default     = "Windows-EC2"
+  default     = "Linux-EC2"
 }
 
 variable "key_name" {
   description = "Existing AWS Key Pair Name"
   type        = string
+}
+
+variable "allowed_ssh_cidr" {
+  description = "CIDR block allowed to access SSH"
+  type        = string
+  default     = "0.0.0.0/0"
 }

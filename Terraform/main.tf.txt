@@ -1,18 +1,18 @@
 #----------------------------------------
-# Security Group for RDP Access
+# Security Group for SSH Access
 #----------------------------------------
 
-resource "aws_security_group" "allow_rdp" {
+resource "aws_security_group" "allow_ssh" {
 
-  name        = "allow-rdp"
-  description = "Allow Remote Desktop Protocol (RDP)"
-  
+  name        = "allow-ssh"
+  description = "Allow SSH Access"
+
   ingress {
-    description = "RDP Access"
-    from_port   = 3389
-    to_port     = 3389
+    description = "SSH Access"
+    from_port   = 22
+    to_port     = 22
     protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
+    cidr_blocks = [var.allowed_ssh_cidr]
   }
 
   egress {
@@ -24,22 +24,22 @@ resource "aws_security_group" "allow_rdp" {
   }
 
   tags = {
-    Name = "Windows-RDP-SecurityGroup"
+    Name = "Linux-SSH-SecurityGroup"
   }
 }
 
 #----------------------------------------
-# Windows EC2 Instance
+# Linux EC2 Instance
 #----------------------------------------
 
-resource "aws_instance" "windows_ec2" {
+resource "aws_instance" "linux_ec2" {
 
   ami                    = var.ami_id
   instance_type          = var.instance_type
   key_name               = var.key_name
 
   vpc_security_group_ids = [
-    aws_security_group.allow_rdp.id
+    aws_security_group.allow_ssh.id
   ]
 
   tags = {

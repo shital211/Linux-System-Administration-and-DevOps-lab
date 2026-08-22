@@ -6,7 +6,7 @@ provider "aws" {
     tags = {
       ManagedBy   = "Terraform"
       Environment = "Development"
-      Project     = "Multiple EC2"
+      Project     = "Windows EC2"
     }
   }
 }

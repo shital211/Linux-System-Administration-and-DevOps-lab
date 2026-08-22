@@ -1,11 +1,48 @@
-resource "aws_instance" "linux_ec2" {
+#----------------------------------------
+# Security Group for RDP Access
+#----------------------------------------
 
-  count = var.instance_count
+resource "aws_security_group" "allow_rdp" {
 
-  ami           = var.ami_id
-  instance_type = var.instance_type
+  name        = "allow-rdp"
+  description = "Allow Remote Desktop Protocol (RDP)"
+  
+  ingress {
+    description = "RDP Access"
+    from_port   = 3389
+    to_port     = 3389
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  egress {
+    description = "Allow All Outbound Traffic"
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
 
   tags = {
-    Name = "Linux-EC2-${count.index + 1}"
+    Name = "Windows-RDP-SecurityGroup"
+  }
+}
+
+#----------------------------------------
+# Windows EC2 Instance
+#----------------------------------------
+
+resource "aws_instance" "windows_ec2" {
+
+  ami                    = var.ami_id
+  instance_type          = var.instance_type
+  key_name               = var.key_name
+
+  vpc_security_group_ids = [
+    aws_security_group.allow_rdp.id
+  ]
+
+  tags = {
+    Name = var.instance_name
   }
 }

@@ -1,8 +1,8 @@
-# Multiple EC2 Instances using Terraform
+# Windows EC2 using Terraform
 
 ## Overview
 
-This project demonstrates how to provision multiple Amazon EC2 instances using Terraform. It showcases Infrastructure as Code (IaC) principles by deploying multiple resources from a single Terraform configuration, ensuring consistent and repeatable infrastructure deployment.
+This project demonstrates how to provision a Microsoft Windows EC2 instance on AWS using Terraform. It includes the creation of a Security Group that allows Remote Desktop Protocol (RDP) access, enabling secure remote administration of the Windows server.
 
 ---
 
@@ -10,14 +10,14 @@ This project demonstrates how to provision multiple Amazon EC2 instances using T
 
 * Terraform v1.5 or later
 * AWS CLI configured with the `terraform-user` profile
-* AWS account with permissions to create EC2 instances
+* AWS account with permissions to create EC2 instances and Security Groups
 
 ---
 
 ## Project Structure
 
 ```text
-02-Multiple-EC2/
+03-Windows-EC2/
 │
 ├── versions.tf
 ├── provider.tf
@@ -30,9 +30,10 @@ This project demonstrates how to provision multiple Amazon EC2 instances using T
 
 ---
 
-## Resources Provisioned
+## Infrastructure Created
 
-* Two Amazon Linux EC2 instances
+* One Microsoft Windows EC2 instance
+* One Security Group allowing RDP (TCP Port 3389)
 
 ---
 
@@ -80,9 +81,10 @@ terraform destroy
 
 After a successful deployment:
 
-* Two Amazon Linux EC2 instances are created.
-* Terraform displays the resource details in the output.
-* The EC2 instances are available in the AWS Management Console.
+* A Windows EC2 instance is created.
+* An RDP Security Group is attached to the instance.
+* Terraform displays the resource details after deployment.
+* The instance is available in the AWS Management Console.
 
 ---
 
@@ -95,8 +97,8 @@ This project was successfully completed as part of my Terraform hands-on practic
 ## Skills Demonstrated
 
 * Infrastructure as Code (IaC)
-* Terraform Resource Management
 * AWS EC2 Provisioning
-* Managing Multiple Resources
+* Windows Server Deployment
+* AWS Security Groups
 * Terraform Variables and Outputs
 * AWS Provider Configuration

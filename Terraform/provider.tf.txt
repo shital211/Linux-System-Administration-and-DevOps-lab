@@ -1,0 +1,12 @@
+provider "aws" {
+  profile = "terraform-user"
+  region  = var.aws_region
+
+  default_tags {
+    tags = {
+      ManagedBy   = "Terraform"
+      Environment = "Development"
+      Project     = "IAM User"
+    }
+  }
+}

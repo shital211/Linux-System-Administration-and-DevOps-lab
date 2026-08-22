@@ -1,0 +1,16 @@
+variable "aws_region" {
+  description = "AWS Region"
+  type        = string
+  default     = "ap-south-1"
+}
+
+variable "iam_user_name" {
+  description = "IAM User Name"
+  type        = string
+}
+
+variable "policy_arn" {
+  description = "IAM Policy ARN"
+  type        = string
+  default     = "arn:aws:iam::aws:policy/AmazonS3FullAccess"
+}

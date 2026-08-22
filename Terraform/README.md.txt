@@ -1,8 +1,8 @@
-# Linux EC2 with Security Group using Terraform
+# Amazon S3 Bucket using Terraform
 
 ## Overview
 
-This project demonstrates how to provision an Amazon Linux EC2 instance along with a Security Group using Terraform. The Security Group allows SSH access (TCP Port 22), enabling secure remote administration of the Linux server.
+This project demonstrates how to create and manage an Amazon S3 bucket using Terraform. It showcases Infrastructure as Code (IaC) principles for provisioning cloud storage resources in a consistent and repeatable manner.
 
 ---
 
@@ -10,14 +10,14 @@ This project demonstrates how to provision an Amazon Linux EC2 instance along wi
 
 * Terraform v1.5 or later
 * AWS CLI configured with the `terraform-user` profile
-* AWS account with permissions to create EC2 instances and Security Groups
+* AWS account with permissions to create Amazon S3 buckets
 
 ---
 
 ## Project Structure
 
 ```text
-04-Linux-EC2-With-SecurityGroup/
+05-S3-Bucket/
 │
 ├── versions.tf
 ├── provider.tf
@@ -32,8 +32,7 @@ This project demonstrates how to provision an Amazon Linux EC2 instance along wi
 
 ## Infrastructure Created
 
-* One Amazon Linux EC2 instance
-* One Security Group allowing SSH (TCP Port 22)
+* One Amazon S3 bucket
 
 ---
 
@@ -81,10 +80,9 @@ terraform destroy
 
 After a successful deployment:
 
-* An Amazon Linux EC2 instance is created.
-* A Security Group allowing SSH access is attached to the instance.
-* Terraform displays the resource details after deployment.
-* The instance is available in the AWS Management Console.
+* An Amazon S3 bucket is created.
+* Terraform displays the resource information after deployment.
+* The bucket is visible in the AWS Management Console.
 
 ---
 
@@ -97,8 +95,7 @@ This project was successfully completed as part of my Terraform hands-on practic
 ## Skills Demonstrated
 
 * Infrastructure as Code (IaC)
-* AWS EC2 Provisioning
-* AWS Security Groups
-* Linux Server Deployment
-* Terraform Variables and Outputs
+* Amazon S3 Provisioning
+* Terraform Resource Management
 * AWS Provider Configuration
+* Terraform Variables and Outputs

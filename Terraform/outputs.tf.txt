@@ -1,19 +1,14 @@
-output "instance_id" {
-  description = "Linux EC2 Instance ID"
-  value       = aws_instance.linux_ec2.id
+output "bucket_name" {
+  description = "S3 Bucket Name"
+  value       = aws_s3_bucket.terraform_bucket.bucket
 }
 
-output "public_ip" {
-  description = "Linux EC2 Public IP"
-  value       = aws_instance.linux_ec2.public_ip
+output "bucket_arn" {
+  description = "S3 Bucket ARN"
+  value       = aws_s3_bucket.terraform_bucket.arn
 }
 
-output "public_dns" {
-  description = "Linux EC2 Public DNS"
-  value       = aws_instance.linux_ec2.public_dns
-}
-
-output "security_group_id" {
-  description = "Security Group ID"
-  value       = aws_security_group.allow_ssh.id
+output "bucket_domain_name" {
+  description = "Bucket Domain Name"
+  value       = aws_s3_bucket.terraform_bucket.bucket_domain_name
 }

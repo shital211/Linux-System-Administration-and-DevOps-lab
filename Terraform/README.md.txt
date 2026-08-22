@@ -1,8 +1,8 @@
-# Basic Linux EC2 using Terraform
+# Multiple EC2 Instances using Terraform
 
-## Objective
+## Overview
 
-Provision a single Amazon Linux EC2 instance on AWS using Terraform. This project demonstrates the basic Terraform workflow for creating cloud infrastructure using Infrastructure as Code (IaC).
+This project demonstrates how to provision multiple Amazon EC2 instances using Terraform. It showcases Infrastructure as Code (IaC) principles by deploying multiple resources from a single Terraform configuration, ensuring consistent and repeatable infrastructure deployment.
 
 ---
 
@@ -10,14 +10,14 @@ Provision a single Amazon Linux EC2 instance on AWS using Terraform. This projec
 
 * Terraform v1.5 or later
 * AWS CLI configured with the `terraform-user` profile
-* AWS Account with permissions to create EC2 instances
+* AWS account with permissions to create EC2 instances
 
 ---
 
-## Project Files
+## Project Structure
 
 ```text
-01-Basic-Linux-EC2/
+02-Multiple-EC2/
 │
 ├── versions.tf
 ├── provider.tf
@@ -30,9 +30,9 @@ Provision a single Amazon Linux EC2 instance on AWS using Terraform. This projec
 
 ---
 
-## Resources Created
+## Resources Provisioned
 
-* One Amazon Linux EC2 instance
+* Two Amazon Linux EC2 instances
 
 ---
 
@@ -44,31 +44,31 @@ Initialize Terraform:
 terraform init
 ```
 
-Format configuration:
+Format the configuration:
 
 ```bash
 terraform fmt
 ```
 
-Validate configuration:
+Validate the configuration:
 
 ```bash
 terraform validate
 ```
 
-Review execution plan:
+Review the execution plan:
 
 ```bash
 terraform plan
 ```
 
-Create infrastructure:
+Provision the infrastructure:
 
 ```bash
 terraform apply
 ```
 
-Destroy infrastructure:
+Remove the infrastructure:
 
 ```bash
 terraform destroy
@@ -78,24 +78,25 @@ terraform destroy
 
 ## Expected Result
 
-* A Linux EC2 instance is created successfully.
-* Terraform displays the created resource information after deployment.
-* The EC2 instance is visible in the AWS Management Console.
+After a successful deployment:
+
+* Two Amazon Linux EC2 instances are created.
+* Terraform displays the resource details in the output.
+* The EC2 instances are available in the AWS Management Console.
 
 ---
 
 ## Notes
 
-* This project was originally implemented and tested as part of my Terraform hands-on practice.
-* Screenshots were not captured during the original execution. They will be added when the infrastructure is recreated.
+This project was successfully completed as part of my Terraform hands-on practice. The original execution screenshots were not preserved. The infrastructure can be recreated at any time using the Terraform configuration and workflow provided in this repository.
 
 ---
 
 ## Skills Demonstrated
 
-* Terraform Basics
-* AWS EC2
 * Infrastructure as Code (IaC)
-* Terraform Variables
-* Terraform Outputs
+* Terraform Resource Management
+* AWS EC2 Provisioning
+* Managing Multiple Resources
+* Terraform Variables and Outputs
 * AWS Provider Configuration

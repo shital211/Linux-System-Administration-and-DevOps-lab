@@ -1,19 +1,9 @@
-output "instance_id" {
-  description = "EC2 Instance ID"
-  value       = aws_instance.linux_ec2.id
+output "instance_ids" {
+  description = "IDs of all EC2 instances"
+  value       = aws_instance.linux_ec2[*].id
 }
 
-output "public_ip" {
-  description = "Public IP Address"
-  value       = aws_instance.linux_ec2.public_ip
-}
-
-output "public_dns" {
-  description = "Public DNS Name"
-  value       = aws_instance.linux_ec2.public_dns
-}
-
-output "availability_zone" {
-  description = "Availability Zone"
-  value       = aws_instance.linux_ec2.availability_zone
+output "public_ips" {
+  description = "Public IPs of all EC2 instances"
+  value       = aws_instance.linux_ec2[*].public_ip
 }

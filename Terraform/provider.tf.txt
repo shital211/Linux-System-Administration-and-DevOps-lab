@@ -1,12 +1,11 @@
 provider "aws" {
   profile = "terraform-user"
-  region  = var.aws_region
+  region  = "ap-south-1"
 
   default_tags {
     tags = {
-      ManagedBy   = "Terraform"
-      Environment = "Development"
-      Project     = "Basic VPC"
+      ManagedBy = "Terraform"
+      Project   = "Import Existing EC2"
     }
   }
 }

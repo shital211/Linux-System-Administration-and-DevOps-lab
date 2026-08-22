@@ -1,19 +1,7 @@
-output "vpc_id" {
-  description = "VPC ID"
-  value       = aws_vpc.main_vpc.id
+output "instance_id" {
+  value = aws_instance.imported_ec2.id
 }
 
-output "subnet_id" {
-  description = "Public Subnet ID"
-  value       = aws_subnet.public_subnet.id
-}
-
-output "internet_gateway_id" {
-  description = "Internet Gateway ID"
-  value       = aws_internet_gateway.igw.id
-}
-
-output "route_table_id" {
-  description = "Route Table ID"
-  value       = aws_route_table.public_rt.id
+output "instance_arn" {
+  value = aws_instance.imported_ec2.arn
 }

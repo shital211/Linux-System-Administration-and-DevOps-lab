@@ -1,109 +1,138 @@
-# AWS VPC using Terraform
+# Terraform Import Existing EC2
 
-## Overview
+## Objective
 
-This project demonstrates how to provision a basic Virtual Private Cloud (VPC) infrastructure in AWS using Terraform. It creates a VPC, a public subnet, an Internet Gateway, a Route Table, and a Route Table Association to establish a functional public network environment.
+Import an existing EC2 instance into Terraform state and verify that Terraform can manage it.
 
 ---
 
 ## Prerequisites
 
-* Terraform v1.5 or later
-* AWS CLI configured with the `terraform-user` profile
-* AWS account with permissions to create VPC networking resources
+* AWS CLI configured with the `terraform-user` profile.
+* Terraform installed.
+* An existing EC2 instance already running in AWS.
 
 ---
 
-## Project Structure
+## Project Files
 
 ```text
-07-Basic-VPC/
+08-Terraform-Import-EC2/
 │
 ├── versions.tf
 ├── provider.tf
-├── variables.tf
 ├── main.tf
 ├── outputs.tf
-├── terraform.tfvars.example
-└── .gitignore
+├── .gitignore
+└── README.md
 ```
 
 ---
 
-## Infrastructure Created
+## Step 1: Initialize Terraform
 
-* One Virtual Private Cloud (VPC)
-* One Public Subnet
-* One Internet Gateway
-* One Route Table
-* One Route Table Association
-
----
-
-## Terraform Workflow
-
-Initialize Terraform:
+Run:
 
 ```bash
 terraform init
 ```
 
-Format the configuration:
+Expected Output:
 
-```bash
-terraform fmt
+```text
+Terraform has been successfully initialized!
 ```
 
-Validate the configuration:
+---
 
-```bash
-terraform validate
+## Step 2: Import Existing EC2 Instance
+
+First, copy the EC2 Instance ID from the AWS Console.
+
+Example:
+
+```text
+i-0123456789abcdef0
 ```
 
-Review the execution plan:
+Import the instance:
+
+```bash
+terraform import aws_instance.imported_ec2 i-0123456789abcdef0
+```
+
+Replace the example Instance ID with your own.
+
+---
+
+## Step 3: Verify Imported Resources
+
+List all resources managed by Terraform:
+
+```bash
+terraform state list
+```
+
+Example Output:
+
+```text
+aws_instance.imported_ec2
+```
+
+---
+
+## Step 4: Display Resource Details
+
+Display all attributes of the imported EC2 instance:
+
+```bash
+terraform state show aws_instance.imported_ec2
+```
+
+This command displays details such as:
+
+* Instance ID
+* AMI ID
+* Instance Type
+* Subnet ID
+* VPC ID
+* Security Groups
+* Tags
+* Public IP
+* Private IP
+
+---
+
+## Step 5: Review Configuration
+
+Run:
 
 ```bash
 terraform plan
 ```
 
-Provision the infrastructure:
+Initially, Terraform may show differences because the configuration only contains an empty resource block.
 
-```bash
-terraform apply
+As you add the EC2 attributes (AMI, instance type, subnet, tags, security groups, etc.) to `main.tf`, the differences will reduce.
+
+The goal is for `terraform plan` to eventually display:
+
+```text
+No changes. Your infrastructure matches the configuration.
 ```
 
-Remove the infrastructure:
+---
+
+## Commands Used
 
 ```bash
-terraform destroy
+terraform init
+
+terraform import aws_instance.imported_ec2 <instance-id>
+
+terraform state list
+
+terraform state show aws_instance.imported_ec2
+
+terraform plan
 ```
-
----
-
-## Expected Result
-
-After a successful deployment:
-
-* A Virtual Private Cloud (VPC) is created.
-* A public subnet is associated with the route table.
-* An Internet Gateway is attached to the VPC.
-* The networking resources are visible in the AWS Management Console.
-* Terraform displays the created resource information after deployment.
-
----
-
-## Notes
-
-This project was successfully completed as part of my Terraform hands-on practice. The original execution screenshots were not preserved. The infrastructure can be recreated at any time using the Terraform configuration and workflow provided in this repository.
-
----
-
-## Skills Demonstrated
-
-* Infrastructure as Code (IaC)
-* AWS VPC Networking
-* Public Subnet Configuration
-* Internet Gateway Configuration
-* Route Table Management
-* Terraform Variables and Outputs
-* AWS Provider Configuration

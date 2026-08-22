@@ -1,8 +1,8 @@
-# Amazon S3 Bucket using Terraform
+# AWS IAM User using Terraform
 
 ## Overview
 
-This project demonstrates how to create and manage an Amazon S3 bucket using Terraform. It showcases Infrastructure as Code (IaC) principles for provisioning cloud storage resources in a consistent and repeatable manner.
+This project demonstrates how to create an AWS Identity and Access Management (IAM) user using Terraform. It also attaches an Amazon S3 access policy and generates programmatic access credentials, illustrating how Terraform can be used to manage AWS identities and permissions.
 
 ---
 
@@ -10,14 +10,14 @@ This project demonstrates how to create and manage an Amazon S3 bucket using Ter
 
 * Terraform v1.5 or later
 * AWS CLI configured with the `terraform-user` profile
-* AWS account with permissions to create Amazon S3 buckets
+* AWS account with permissions to create IAM users and manage IAM policies
 
 ---
 
 ## Project Structure
 
 ```text
-05-S3-Bucket/
+06-IAM-User/
 │
 ├── versions.tf
 ├── provider.tf
@@ -32,7 +32,9 @@ This project demonstrates how to create and manage an Amazon S3 bucket using Ter
 
 ## Infrastructure Created
 
-* One Amazon S3 bucket
+* One AWS IAM User
+* Amazon S3 Full Access Policy Attachment
+* Programmatic Access Key
 
 ---
 
@@ -80,9 +82,10 @@ terraform destroy
 
 After a successful deployment:
 
-* An Amazon S3 bucket is created.
-* Terraform displays the resource information after deployment.
-* The bucket is visible in the AWS Management Console.
+* An IAM user is created.
+* The Amazon S3 Full Access policy is attached to the user.
+* Programmatic access credentials are generated.
+* Terraform displays the created resource information after deployment.
 
 ---
 
@@ -95,7 +98,8 @@ This project was successfully completed as part of my Terraform hands-on practic
 ## Skills Demonstrated
 
 * Infrastructure as Code (IaC)
-* Amazon S3 Provisioning
-* Terraform Resource Management
-* AWS Provider Configuration
+* AWS IAM User Management
+* IAM Policy Attachments
+* AWS Identity and Access Management
 * Terraform Variables and Outputs
+* AWS Provider Configuration

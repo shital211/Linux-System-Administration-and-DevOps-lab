@@ -6,7 +6,7 @@ provider "aws" {
     tags = {
       ManagedBy   = "Terraform"
       Environment = "Development"
-      Project     = "S3 Bucket"
+      Project     = "IAM User"
     }
   }
 }

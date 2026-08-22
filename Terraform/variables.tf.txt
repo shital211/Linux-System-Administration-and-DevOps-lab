@@ -4,13 +4,13 @@ variable "aws_region" {
   default     = "ap-south-1"
 }
 
-variable "bucket_name" {
-  description = "Globally unique S3 bucket name"
+variable "iam_user_name" {
+  description = "IAM User Name"
   type        = string
 }
 
-variable "environment" {
-  description = "Deployment Environment"
+variable "policy_arn" {
+  description = "IAM Policy ARN"
   type        = string
-  default     = "Development"
+  default     = "arn:aws:iam::aws:policy/AmazonS3FullAccess"
 }

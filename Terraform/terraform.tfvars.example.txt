@@ -1,5 +1,5 @@
 aws_region = "ap-south-1"
 
-bucket_name = "terraform-learning-bucket-1"
+iam_user_name = "terraform-demo-user"
 
-environment = "Development"
+policy_arn = "arn:aws:iam::aws:policy/AmazonS3FullAccess"

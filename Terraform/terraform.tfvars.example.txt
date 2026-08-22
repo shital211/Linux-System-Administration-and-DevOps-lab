@@ -1,5 +1,0 @@
-aws_region = "ap-south-1"
-
-iam_user_name = "terraform-demo-user"
-
-policy_arn = "arn:aws:iam::aws:policy/AmazonS3FullAccess"

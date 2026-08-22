@@ -1,7 +1,9 @@
-output "instance_id" {
-  value = aws_instance.imported_ec2.id
+output "bucket_name" {
+  description = "Imported S3 Bucket Name"
+  value       = aws_s3_bucket.imported_bucket.bucket
 }
 
-output "instance_arn" {
-  value = aws_instance.imported_ec2.arn
+output "bucket_arn" {
+  description = "Imported S3 Bucket ARN"
+  value       = aws_s3_bucket.imported_bucket.arn
 }

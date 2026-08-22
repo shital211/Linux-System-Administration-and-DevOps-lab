@@ -1,2 +1,2 @@
-resource "aws_instance" "imported_ec2" {
+resource "aws_s3_bucket" "imported_bucket" {
 }
